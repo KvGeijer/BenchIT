@@ -26,9 +26,9 @@ for file in `find . -name "*.java"`; do
   javaFiles="$javaFiles $file"
 done
 
-mkdir -p ../bin/class
-rm -rf ../bin/class/*
-javac -classpath ".:$jarFiles" -d ../bin/class $javaFiles
+rm -rf ../build
+mkdir -p ../build
+javac -classpath ".:$jarFiles" -d ../build $javaFiles
 #*.java admin/*.java com/twmacinta/util/*.java com/twmacinta/io/*.java conn/*.java generated/org/benchit/bitconnect/service/types/*.java generated/org/benchit/bitconnect/service/*.java gui/*.java org/benchit/bitconnect/*.java org/benchit/bitconnect/gui/*.java org/syntax/jedit/*.java org/syntax/jedit/tokenmarker/*.java plot/data/*.java plot/gui/*.java reportgen/*.java system/*.java
 ../bin/install.sh
 

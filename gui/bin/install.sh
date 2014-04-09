@@ -14,11 +14,11 @@
 echo "###### installing ######"
 
 cd `dirname ${0}`
-if [ ! -d class ]; then
-  echo "class folder not found"
+if [ ! -d ../build ]; then
+  echo "build folder not found"
   exit
 fi
-cd class
+cd ../build
 
 rm -f BenchIT.jar
 echo "Manifest-Version: 1.0" > MANIFEST.SF
@@ -26,16 +26,16 @@ echo "Main-Class: BIGMain" >> MANIFEST.SF
 echo "Class-Path: ." >> MANIFEST.SF
 echo "Built-By: $USER" >> MANIFEST.SF
 
-for file in `find ../../lib -name "*.jar"`; do
+for file in `find ../lib -name "*.jar"`; do
   jar xf $file
 done
 rm -f META-INF/*.SF
 
 echo "###### packaging ######"
-jar cfm ../BenchIT.jar MANIFEST.SF *
+jar cfm ../bin/BenchIT.jar MANIFEST.SF *
 
 cd ..
-rm -rf ./class
+rm -rf ./build
 
 echo "###### done       ######"
 ###############################################################################
