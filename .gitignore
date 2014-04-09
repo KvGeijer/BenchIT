@@ -15,3 +15,5 @@ gui/bin/org
 gui/bin/plot
 gui/bin/reportgen
 gui/bin/system
+# Ant buildpath
+gui/build

@@ -13,12 +13,29 @@
 ###############################################################################
 echo "###### installing ######"
 
-cd ../src
-jar uf ../bin/BenchIT.jar *.class */*.class org/syntax/jedit/tokenmarker/*.class
-rm *.class
-rm */*.class
-rm org/syntax/jedit/tokenmarker/*.class
-cd ../bin
+cd `dirname ${0}`
+if [ ! -d class ]; then
+  echo "class folder not found"
+  exit
+fi
+cd class
+
+rm -f BenchIT.jar
+echo "Manifest-Version: 1.0" > MANIFEST.SF
+echo "Main-Class: BIGMain" >> MANIFEST.SF
+echo "Class-Path: ." >> MANIFEST.SF
+echo "Built-By: $USER" >> MANIFEST.SF
+
+for file in `find ../../lib -name "*.jar"`; do
+  jar xf $file
+done
+rm -f META-INF/*.SF
+
+echo "###### packaging ######"
+jar cfm ../BenchIT.jar MANIFEST.SF *
+
+cd ..
+rm -rf ./class
 
 echo "###### done       ######"
 ###############################################################################
