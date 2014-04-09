@@ -6,3 +6,12 @@
 *.project
 *.workspace
 .codelite
+gui/bin/*.class
+gui/bin/admin
+gui/bin/com
+gui/bin/conn
+gui/bin/gui
+gui/bin/org
+gui/bin/plot
+gui/bin/reportgen
+gui/bin/system
