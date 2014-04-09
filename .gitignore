@@ -6,6 +6,9 @@
 *.project
 *.workspace
 .codelite
+tools/hw_detect/cpuinfo
+gui/bin/BenchIT.jar
+# Eclipse buildpath
 gui/bin/*.class
 gui/bin/admin
 gui/bin/com
