@@ -21,18 +21,19 @@ fi
 cd ../build
 
 rm -f BenchIT.jar
-echo "Manifest-Version: 1.0" > MANIFEST.SF
-echo "Main-Class: BIGMain" >> MANIFEST.SF
-echo "Class-Path: ." >> MANIFEST.SF
-echo "Built-By: $USER" >> MANIFEST.SF
-
 for file in `find ../lib -name "*.jar"`; do
   jar xf $file
 done
 rm -f META-INF/*.SF
+mkdir -p META-INF
+echo "Manifest-Version: 1.0" > META-INF/MANIFEST.SF
+echo "Main-Class: BIGMain" >> META-INF/MANIFEST.SF
+echo "Class-Path: ." >> META-INF/MANIFEST.SF
+echo "Built-By: $USER" >> META-INF/MANIFEST.SF
+
 
 echo "###### packaging ######"
-jar cfm ../bin/BenchIT.jar MANIFEST.SF *
+jar cf ../bin/BenchIT.jar *
 
 cd ..
 rm -rf ./build
