@@ -28,7 +28,7 @@ done
 
 rm -rf ../build
 mkdir -p ../build
-javac -classpath ".:$jarFiles" -d ../build $javaFiles
+javac -Xlint:unchecked -encoding ISO-8859-1 -classpath ".:$jarFiles" -d ../build $javaFiles
 #*.java admin/*.java com/twmacinta/util/*.java com/twmacinta/io/*.java conn/*.java generated/org/benchit/bitconnect/service/types/*.java generated/org/benchit/bitconnect/service/*.java gui/*.java org/benchit/bitconnect/*.java org/benchit/bitconnect/gui/*.java org/syntax/jedit/*.java org/syntax/jedit/tokenmarker/*.java plot/data/*.java plot/gui/*.java reportgen/*.java system/*.java
 ../bin/install.sh
 
