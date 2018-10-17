@@ -29,7 +29,7 @@ do
    FILE=`basename $1`
    cd $FOLDER
    gnuplot "${FILE}.gp"
-   { gv "${FILE}.gp.eps" || gview "${FILE}.gp.eps" ||  echo "QUICKVIEW: Ghostview not found. Could not display ${FILE}.gp.eps"; } &
+   { gv "${FILE}.eps" || gview "${FILE}.eps" ||  echo "QUICKVIEW: Ghostview not found. Could not display ${FILE}.eps"; } &
    shift
 done
 

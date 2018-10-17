@@ -296,9 +296,9 @@ int write_gp_file(char* bitFileName, char* kernelString, bi_info theInfo, axisda
 	}
 	fprintf(gpFile, "set ylabel \"%s\"\n", (theInfo.yaxistexts != 0) && (theInfo.yaxistexts[0] != 0) ? theInfo.yaxistexts[0] : "");
 	if (bi_getenv("BENCHIT_LINES", 0))
-		fprintf(gpFile, "set data style linespoints\n");
+		fprintf(gpFile, "set style data linespoints\n");
 	else
-		fprintf(gpFile, "set data style points\n");
+		fprintf(gpFile, "set style data points\n");
 	fprintf(gpFile, "set term postscript eps color solid\n");
 	char *epsFileName=bi_strndup(bitFileName,4);
 	strcat(epsFileName, ".eps");

@@ -1,0 +1,79 @@
+#!/bin/sh
+#####################################################################
+# BenchIT - Performance Measurement for Scientific Applications
+# Contact: developer@benchit.org
+#
+# $Id: LSF_deimos 1 2009-09-11 12:26:19Z william $
+# $URL: svn+ssh://william@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/tools/environments/LSF_deimos $
+# For license details see COPYING in the package base directory
+#####################################################################
+
+###############################################################
+# Create batch file
+###############################################################
+
+
+if [ -n "${BENCHIT_FILENAME_COMMENT}" ]; then
+  script="${BENCHITROOT}/temp_script_file_${BENCHIT_KERNELNAME}.${BENCHIT_FILENAME_COMMENT}.`date +%s%N`"
+else
+  script="${BENCHITROOT}/temp_script_file_${BENCHIT_KERNELNAME}.`date +%s%N`"
+fi
+
+echo "#!/bin/bash
+#SBATCH --exclusive"  > ${script}
+
+if [ -n "${BENCHIT_NUM_CPUS}" ]; then
+echo "#SBATCH -n ${BENCHIT_NUM_CPUS}" >> ${script}
+else
+echo "#SBATCH -n 1" >> ${script}
+fi
+
+if [ -n "${BENCHIT_RUN_REDIRECT_CONSOLE}" ]; then
+echo "#SBATCH -o ${BENCHIT_RUN_REDIRECT_CONSOLE}
+#SBATCH -e ${BENCHIT_RUN_REDIRECT_CONSOLE}" >> ${script}
+fi
+
+if [ -n "${BENCHIT_RUN_QUEUETIMELIMIT}" ]; then
+echo "#SBATCH --time `echo $BENCHIT_RUN_QUEUETIMELIMIT / 60 + 1 | bc`" >> ${script}
+else
+echo "#SBATCH --time `echo $BENCHIT_RUN_TIMELIMIT / 50 + 1 | bc`" >> ${script}
+fi
+
+if [ -n "${BENCHIT_RUN_EMAIL_ADDRESS}" ]; then
+echo "#SBATCH --mail-user=${BENCHIT_RUN_EMAIL_ADDRESS}" >> ${script}
+fi
+
+if [ -n "${BENCHIT_RUN_QUEUENAME}" ]; then
+echo "#SBATCH -p ${BENCHIT_RUN_QUEUENAME}" >> ${script}
+fi
+
+ONE="1"
+if [ -n "${BENCHIT_NUM_GPUS}" ]; then
+if [ ${BENCHIT_NUM_GPUS} -ge ${ONE} ]; then
+echo "#SBATCH --gres=gpu:${BENCHIT_NUM_GPUS}" >> ${script}
+fi
+fi
+
+if [ -n "${BENCHIT_RUN_MAX_MEMORY}" ]; then
+echo "#SBATCH --mem=${BENCHIT_RUN_MAX_MEMORY}M" >> ${script}
+fi
+
+echo "
+cd ${BENCHITROOT}
+
+ulimit -c unlimited
+
+srun -n ${BENCHIT_NUM_PROCESSES} -c ${BENCHIT_NUM_THREADS_PER_PROCESS} ${BENCHIT_KERNELBINARY} ${BENCHIT_KERNELBINARY_ARGS}
+
+rm ${script}
+" >> ${script}
+
+
+
+########################################################################
+# Submit
+########################################################################
+
+batch_cmd="sbatch ${BENCHIT_RUN_QUEUEOPTIONS} $script"
+
+eval $batch_cmd
