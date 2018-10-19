@@ -12,5 +12,5 @@
 # (C)
 #####################################################################
 
-# problemsizes N
+# problemSizes N
 BENCHIT_KERNEL_PROBLEMLIST="1-2048/1"

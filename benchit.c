@@ -1433,12 +1433,12 @@ int bi_confuseCache(size_t nCacheSize) {
  * DO NOT CALL THIS DIRECTLY! It is called from the other functions to avoid conversion warnings
  * @param[inout] ptr Pointer reference to be freed and set
  */
-void freeChecked(void* ptr) {
+void freeChecked(void** ptr) {
 	if(ptr==NULL){
 		IDL(0,printf("ERR: NULL ptr given to freeChecked"));
 		return;
 	}
-	void **ptrRef=ptr;
+	void **ptrRef=(void**)ptr;
 	if (*ptrRef){
 		free(*ptrRef);
 		*ptrRef=NULL;
@@ -1451,7 +1451,7 @@ void freeChecked(void* ptr) {
  * @param[inout] ptr Pointer reference to be freed and set
  */
 void freeCheckedD(double** ptr) {
-	freeChecked(ptr);
+	freeChecked((void**)ptr);
 }
 
 /*!@brief Free the given pointer of !=NULL and set it to NULL
@@ -1459,11 +1459,11 @@ void freeCheckedD(double** ptr) {
  * @param[inout] ptr Pointer reference to be freed and set
  */
 void freeCheckedC(char** ptr) {
-	freeChecked(ptr);
+	freeChecked((void**)ptr);
 }
 
 void freeCheckedI(int** ptr) {
-	freeChecked(ptr);
+	freeChecked((void**)ptr);
 }
 
 /* variables for random number generator */
@@ -1749,13 +1749,13 @@ void bi_parselist(const char *pcstring) {
 					}
 
 					/*create a new element ....*/
-					pelement = (bi_list_t *) malloc(sizeof(bi_list_t));
+					pelement = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 					/* remember the first element */
 					if (pfirst == NULL )
 						pfirst = pelement;
 					/* create anchor id nessessary */
 					if (panchor == NULL )
-						panchor = (bi_list_t *) malloc(sizeof(bi_list_t));
+						panchor = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 					panchor->pnext = pelement;
 					panchor = pelement;
 					pelement->dnumber = (double) lstartnumber;
@@ -1785,7 +1785,7 @@ void bi_parselist(const char *pcstring) {
 					if (negraise == 0) {
 						for (lj = lstartnumber; lj <= lendnumber - lraise; lj += lraise) {
 							/*allocate element*/
-							pelement = (bi_list_t *) malloc(sizeof(bi_list_t));
+							pelement = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 							panchor->pnext = pelement;
 							panchor = pelement;
 							/*create an element with the number
@@ -1797,7 +1797,7 @@ void bi_parselist(const char *pcstring) {
 					} else {
 						for (lj = lstartnumber; lj >= lendnumber + lraise; lj -= lraise) {
 							/*allocate element*/
-							pelement = (bi_list_t *) malloc(sizeof(bi_list_t));
+							pelement = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 							panchor->pnext = pelement;
 							panchor = pelement;
 							/*create an element with the number
@@ -1812,13 +1812,13 @@ void bi_parselist(const char *pcstring) {
 				/* if the next char is a comma or end is reached */
 				if (pcstring[li] == ',' || pcstring[li] == 0) {
 					/*create a new element ....*/
-					pelement = (bi_list_t *) malloc(sizeof(bi_list_t));
+					pelement = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 					/* remember the first element */
 					if (pfirst == NULL )
 						pfirst = pelement;
 					/* create anchor id nessessary */
 					if (panchor == NULL )
-						panchor = (bi_list_t *) malloc(sizeof(bi_list_t));
+						panchor = (bi_list_t *) calloc(sizeof(bi_list_t),1);
 					panchor->pnext = pelement;
 					panchor = pelement;
 					pelement->dnumber = (double) lstartnumber;
@@ -1864,7 +1864,7 @@ char* bi_strndup(const char *str, size_t addCt) {
 		(void) safe_exit(127);
 	}
 	size_t len = 1 + strlen(str);
-	char *so = malloc(len + addCt);
+	char *so = (char *) malloc(len + addCt);
 	if (so)
 		memcpy(so, str, len);
 	else {

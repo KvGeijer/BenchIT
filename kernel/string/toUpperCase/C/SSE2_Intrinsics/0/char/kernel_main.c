@@ -70,14 +70,16 @@ void bi_getinfo(bi_info * infostruct)
    /* allocating memory for y axis texts and properties */
    allocYAxis(infostruct);
    /* setting up y axis texts and properties */
+	 for (i=0;i<infostruct->numfunctions;i++)
+	 {
       infostruct->yaxistexts[i] = bi_strdup("s");
       infostruct->selected_result[i] = SELECT_RESULT_LOWEST;
       infostruct->base_yaxis[i] = 0; //logarythmic axis 10^x
    }
-      infostruct->legendtexts[0] = bi_strdup("standard");
-      infostruct->legendtexts[1] = bi_strdup("SSE unaligned");
-      infostruct->legendtexts[2] = bi_strdup("SSE aligned");
- 
+   infostruct->legendtexts[0] = bi_strdup("standard");
+   infostruct->legendtexts[1] = bi_strdup("SSE unaligned");
+   infostruct->legendtexts[2] = bi_strdup("SSE aligned");
+
    /* free all used space */
    if (penv) free(penv);
 }
@@ -140,7 +142,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
   myinttype offset = pmydata->offset;
   /* calculate real problemSize */
   imyproblemSize = (myinttype) bi_get_list_element(iproblemSize);
-  
+
 	for (ii=0;ii<imyproblemSize+offset;ii++)
 	{
 		if (ii%2==0)
@@ -150,13 +152,13 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	}
   /* check wether the pointer to store the results in is valid or not */
   if (dresults == NULL) return 1;
-	
+
   /* get the actual time
    * do the measurement / your algorythm
    * get the actual time
    */
-  dstart = bi_gettime(); 
-  dres = toUpperCase(&(pmydata->field[offset]), imyproblemSize); 
+  dstart = bi_gettime();
+  dres = toUpperCase(&(pmydata->field[offset]), imyproblemSize);
   dend = bi_gettime();
 
 //  fprintf(stderr, "Problemsize=%d, Value=%f\n", imyproblemSize, dres);
@@ -164,9 +166,9 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
   /* calculate the used time and FLOPS */
   dtime = dend - dstart;
   dtime -= dTimerOverhead;
-      
+
   /* If the operation was too fast to be measured by the timer function,
-   * mark the result as invalid 
+   * mark the result as invalid
    */
   if(dtime < dTimerGranularity) dtime = INVALID_MEASUREMENT;
 
@@ -187,13 +189,13 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	}
   /* check wether the pointer to store the results in is valid or not */
   if (dresults == NULL) return 1;
-	
+
   /* get the actual time
    * do the measurement / your algorythm
    * get the actual time
    */
-  dstart = bi_gettime(); 
-  dres = toUpperCaseSSEunaligned(&(pmydata->field[offset]), imyproblemSize); 
+  dstart = bi_gettime();
+  dres = toUpperCaseSSEunaligned(&(pmydata->field[offset]), imyproblemSize);
   dend = bi_gettime();
 
 //  fprintf(stderr, "Problemsize=%d, Value=%f\n", imyproblemSize, dres);
@@ -201,9 +203,9 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
   /* calculate the used time and FLOPS */
   dtime = dend - dstart;
   dtime -= dTimerOverhead;
-      
+
   /* If the operation was too fast to be measured by the timer function,
-   * mark the result as invalid 
+   * mark the result as invalid
    */
   if(dtime < dTimerGranularity) dtime = INVALID_MEASUREMENT;
 
@@ -223,13 +225,13 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	}
   /* check wether the pointer to store the results in is valid or not */
   if (dresults == NULL) return 1;
-	
+
   /* get the actual time
    * do the measurement / your algorythm
    * get the actual time
    */
-  dstart = bi_gettime(); 
-  dres = toUpperCaseSSE(pmydata->field, imyproblemSize); 
+  dstart = bi_gettime();
+  dres = toUpperCaseSSE(pmydata->field, imyproblemSize);
   dend = bi_gettime();
 
 //  fprintf(stderr, "Problemsize=%d, Value=%f\n", imyproblemSize, dres);
@@ -237,9 +239,9 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
   /* calculate the used time and FLOPS */
   dtime = dend - dstart;
   dtime -= dTimerOverhead;
-      
+
   /* If the operation was too fast to be measured by the timer function,
-   * mark the result as invalid 
+   * mark the result as invalid
    */
   if(dtime < dTimerGranularity) dtime = INVALID_MEASUREMENT;
 
@@ -265,4 +267,3 @@ void bi_cleanup(void* mdpv)
    }
    return;
 }
-

@@ -11,4 +11,12 @@
 #####################################################################
 
  # Kernel iterates over PROBLEMLIST
- BENCHIT_KERNEL_PROBLEMLIST="2-2048/2"
+ BENCHIT_KERNEL_PROBLEMLIST="31-16384/31"
+
+
+ONE="1"
+if [ -n "${BENCHIT_NUM_GPUS}" ]; then
+if [ ${BENCHIT_NUM_GPUS} -lt ${ONE} ]; then
+BENCHIT_NUM_GPUS=1
+fi
+fi

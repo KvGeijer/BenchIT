@@ -11,5 +11,5 @@
 #####################################################################
 
  # Kernel iterates over PROBLEMLIST
- BENCHIT_KERNEL_PROBLEMLIST="1-500/1"
-
+export MKL_NUM_THREADS=${BENCHIT_NUM_THREADS_PER_PROCESS}
+ BENCHIT_KERNEL_PROBLEMLIST="1-12000/1"

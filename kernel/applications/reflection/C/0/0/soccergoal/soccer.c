@@ -29,8 +29,8 @@
 
 void coordtrafo(point_t *, double , double , point_t *);
 void coordtrafo_square(point_t *, double , double , point_t *, int *);
-void getline(line_t *, point_t *, point_t *);
-void getline_square(line_t *, point_t *, point_t *, int *);
+void sg_getline(line_t *, point_t *, point_t *);
+void sg_getline_square(line_t *, point_t *, point_t *, int *);
 void getmirror(line_t *, line_t *, line_t *, point_t *);
 int intersec_withgoalline(line_t *, point_t *, point_t *);
 int intersec_withroundpole(line_t *, point_t *, point_t *, point_t *, double);
@@ -46,25 +46,25 @@ void plotline(line_t *);
  */
 double soccergoal(myinttype *probsize, myinttype *version){
   myinttype i, cur, hitgoal, hitpole, count=*probsize, side;
-  
+
   double pfostenradius=6.0;
   double schussradius=100.0;
   double PI = 3.141592653589793;
-  
+
   point_t pfosten[2];
   point_t pfosten1={0.0, 0.0};
   point_t pfosten2={744.0, 0.0};
-  
+
   point_t schuss_start={0.0, 0.0};
   point_t pfostenkontakt={0.0, 0.0};
-  
+
   line_t line, mirroraxes, mirror;
-  
+
   /* alpha: angle outer circle (point of the player)
    * beta:  angle inner circle (pole)
    */
   double alpha, beta, goals;
-  
+
   pfosten[0] = pfosten1;
   pfosten[1] = pfosten2;
 
@@ -81,7 +81,7 @@ double soccergoal(myinttype *probsize, myinttype *version){
       cur = 0;
       /* start point of the shot */
       coordtrafo(&schuss_start, schussradius, alpha, &pfosten[cur]);
-      
+
       if(*version==0){
         /* contact point of the shot with the square pole */
         coordtrafo_square(&pfostenkontakt, pfostenradius, beta, &pfosten[cur], &side);
@@ -92,10 +92,10 @@ double soccergoal(myinttype *probsize, myinttype *version){
 
       /* the ball can only jump 5 times from one pole to the other */
       for(i=0; i<5; i++){
-        cur = i - ((i>>1)<<1); 
-        getline(&line, &pfostenkontakt, &schuss_start);
+        cur = i - ((i>>1)<<1);
+        sg_getline(&line, &pfostenkontakt, &schuss_start);
         IDL(3, printf("pcontx,pconty=%e, %e\n",pfostenkontakt.x,pfostenkontakt.y));
-        
+
         /* transform the hit point, because the ball can not tunnel thru the pole
          * (you can shot from each point to each point, but sometimes the pole blockade the way)
          */
@@ -109,16 +109,16 @@ double soccergoal(myinttype *probsize, myinttype *version){
           } else {
             intersec_withroundpole(&line, &pfosten[cur], &schuss_start, &pfostenkontakt, pfostenradius);
           }
-          getline(&line, &pfostenkontakt, &schuss_start);
+          sg_getline(&line, &pfostenkontakt, &schuss_start);
         }
         IDL(3, plotline(&line));
 
         if(*version==0){
           /* get the axis of reflection for square pole */
-          getline_square(&mirroraxes, &pfosten[cur], &pfostenkontakt, &side);
+          sg_getline_square(&mirroraxes, &pfosten[cur], &pfostenkontakt, &side);
         } else {
           /* get the axis of reflection for round pole */
-          getline(&mirroraxes, &pfosten[cur], &pfostenkontakt);
+          sg_getline(&mirroraxes, &pfosten[cur], &pfostenkontakt);
         }
         IDL(3, plotline(&mirroraxes));
 
@@ -143,12 +143,12 @@ double soccergoal(myinttype *probsize, myinttype *version){
             break;
           }
         }
-        
+
       }
-      
+
     }
   }
-  
+
   return goals;
 }
 
@@ -167,7 +167,7 @@ void coordtrafo_square(point_t *point, double radius, double arc, point_t *m, in
   line_t line;
   double p, r;
   double PI = 3.141592653589793;
-    
+
   if(arc<0.25*PI){
     /* right side of the pole */
     *side = 1;
@@ -181,12 +181,12 @@ void coordtrafo_square(point_t *point, double radius, double arc, point_t *m, in
     *side = -1;
     p = m->x - radius;
   }
-  
+
   line.sx = m->x;
   line.sy = m->y;
   line.tx = radius * cos(arc);
   line.ty = radius * sin(arc);
-  
+
   if(*side==0){
     /* p = sy + r * ty */
     r = (p - line.sy) / line.ty;
@@ -194,14 +194,14 @@ void coordtrafo_square(point_t *point, double radius, double arc, point_t *m, in
     /* p = sx + r * tx */
     r = (p - line.sx) / line.tx;
   }
-  
+
   point->x = line.sx + r * line.tx;
   point->y = line.sy + r * line.ty;
 }
 
 /* calc the line between two points, with unit direction vector */
 /*                    OUT            IN               IN       */
-void getline(line_t *line, point_t *point1, point_t *point2){
+void sg_getline(line_t *line, point_t *point1, point_t *point2){
   double fac;
 
   line->sx = point1->x;
@@ -217,7 +217,7 @@ void getline(line_t *line, point_t *point1, point_t *point2){
 /* calc the line between two points, with unit direction vector, its for the normal vectors
  * (respectively the line of the mirror axis) of the squared pole */
 /*                           OUT            IN               IN           IN     */
-void getline_square(line_t *line, point_t *point1, point_t *point2, int *side){
+void sg_getline_square(line_t *line, point_t *point1, point_t *point2, int *side){
   if(*side==1){
     line->sx = point1->x;
     line->sy = point2->y;
@@ -243,17 +243,17 @@ void getmirror(line_t *mirror, line_t *line, line_t *axis, point_t *intersec){
   double s1, s2, t1, t2, u1, u2, v1, v2;
   double ix, iy, mx, my;
   double b, fac;
-  
+
   s1 = line->sx + line->tx;
   s2 = line->sy + line->ty;
   t1 = -axis->ty;
   t2 = axis->tx;
-  
+
   u1 = axis->sx;
   u2 = axis->sy;
   v1 = axis->tx;
   v2 = axis->ty;
-  
+
   IDL(3, printf("s1,s2,t1,t2=%e, %e, %e, %e;  u1,u2,v1,v2=%e, %e, %e, %e;  \n",s1,s2,t1,t2,u1,u2,v1,v2));
 
   /* calc for intersection of a new line (build from a point on the line and the normal vector of the axis) and axis */
@@ -262,15 +262,15 @@ void getmirror(line_t *mirror, line_t *line, line_t *axis, point_t *intersec){
   } else {
     b = (s2/v2 + (u1-s1)*t2/(t1*v2) - u2) / (1 - (t2*v1)/(t1*v2));
   }
-  
+
   /* intersection point of the new line and the axis */
   ix = u1 + b*v1;
   iy = u2 + b*v2;
-  
+
   /* make a point reflection */
   mx = s1 + 2.0*(ix - s1);
   my = s2 + 2.0*(iy - s2);
-  
+
   /* calc the reflected line out of the reflected point and the intersection point of the axis and the old line */
   mirror->sx = intersec->x;
   mirror->sy = intersec->y;
@@ -286,7 +286,7 @@ void getmirror(line_t *mirror, line_t *line, line_t *axis, point_t *intersec){
 /*                      OUT             IN            IN             IN     */
 int intersec_withgoalline(line_t *line, point_t *p1, point_t *p2){
   double a, b;
-  
+
   if(line->ty > 0.0){
     return 0;
   }
@@ -297,7 +297,7 @@ int intersec_withgoalline(line_t *line, point_t *p1, point_t *p2){
   } else {
     return 0;
   }
-  
+
   if(b>=p1->x && b<=p2->x){
     return 1;
   }else{
@@ -315,7 +315,7 @@ int intersec_withroundpole(line_t *line, point_t *pfosten, point_t *point, point
   double s1=0.0, s2=0.0, t1=0.0, t2=0.0, m1=0.0, m2=0.0, temp1=0.0, temp2=0.0, r=0.0;
   double x1=0.0, x2=0.0;
   myinttype ret=1;
-  
+
   s1 = line->sx;
   s2 = line->sy;
   t1 = line->tx;
@@ -332,11 +332,11 @@ int intersec_withroundpole(line_t *line, point_t *pfosten, point_t *point, point
   } else {
     ret = 0;
   }
-  
+
   /* temorary x values of the "two" possible intersection points */
   temp1 = s1 + x1*t1;
   temp2 = s1 + x2*t1;
-  
+
   /* get this intersection point, which is closer to the "shot" point */
   if(fabs(temp1-line->sx) < fabs(temp2-line->sx)){
     intersec->x = temp1;
@@ -347,7 +347,7 @@ int intersec_withroundpole(line_t *line, point_t *pfosten, point_t *point, point
   }
 
   if((intersec->x < 0.0) != (line->sx < 0.0)) ret = 0;
-  
+
   point->x = line->sx;
   point->y = line->sy;
 
@@ -375,7 +375,7 @@ int intersec_withsquarepole(line_t *line, point_t *pfosten, point_t *point, poin
   p[1].y = line->sy + r2 * line->ty;
   ret[1] = (pfosten->x-radius<=p[1].x && p[1].x<=pfosten->x+radius) ? 1 : 0;
   IDL(3, printf("p[1].x,p[1].y=%e, %e,  ret[1]=%i\n",p[1].x,p[1].y, ret[1]));
-  
+
   /* with left: p = pfosten.x + radius = sx + r * tx */
   r3 = (pfosten->x - radius - line->sx) / line->tx;
   p[2].x = line->sx + r3 * line->tx;
@@ -397,7 +397,7 @@ int intersec_withsquarepole(line_t *line, point_t *pfosten, point_t *point, poin
 
   *intersec = p[min];
   *side = tside[min];
-    
+
   if((intersec->x < 0.0) != (line->sx < 0.0)) ret[min] = 0;
 
   point->x = line->sx;
@@ -412,5 +412,3 @@ void plotline(line_t *line){
   printf("%3.16e, %3.16e\n", line->sx, line->sy);
   printf("%3.16e, %3.16e\n", line->sx+200*line->tx, line->sy+200*line->ty);
 }
-
-

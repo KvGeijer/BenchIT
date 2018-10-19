@@ -6,11 +6,12 @@
  * $URL: svn+ssh://william@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/io/read/C/PThread/0/big_files/kernel_main.c $
  * For license details see COPYING in the package base directory
  *******************************************************************/
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include "interface.h"
 
 #include "tpool.h"
@@ -22,7 +23,7 @@
 
 	tpool_t threadpool;
 
-/*  wrapper for 
+/*  wrapper for
    void readfiles(problemSize, global->maxdeep, btime+i, etime+i)
    because pthreads take only one argument
 */
@@ -37,8 +38,8 @@ int max_problemSize(iods * pmydata)
 {
    int maxps = 0;
    double FILESIZE = pmydata->FILESIZE, DISKSPACE = pmydata->DISKSPACE;
-   
-	/*decades beetween filesize and diskspace -> 
+
+	/*decades beetween filesize and diskspace ->
 	  reduplication: (set{1,5,10,50,...)}*/
         maxps=((int)(log10(DISKSPACE))-(int)(log10(FILESIZE)))*2;
 	/*if filesize is bigger then 5*10^xmin -> one less*/
@@ -51,7 +52,7 @@ int max_problemSize(iods * pmydata)
 	if ((DISKSPACE/1000000)==5*(pow(10,(double)((int)(log10(DISKSPACE/1000000)))))) maxps--;
 	return maxps;
 }
-	
+
 
 /**  The implementation of the bi_getinfo from the BenchIT interface.
  *   Here the infostruct is filled with information about the
@@ -85,7 +86,7 @@ void bi_getinfo(bi_info * infostruct)
       infostruct->selected_result[0] = SELECT_RESULT_HIGHEST;
       infostruct->base_yaxis[0] = 10; //logarythmic axis 10^x
       infostruct->legendtexts[0] = bi_strdup("time in s");
- 
+
    /* free all used space */
    if (penv) free(penv);
 }
@@ -102,7 +103,7 @@ void bi_getinfo(bi_info * infostruct)
 void* bi_init(int problemSizemax)
 {
 	createFiles();
-	
+
 	iods * pmydata;
 	const char *path, *tmpheader;
 	char *fileheader, *destination;
@@ -119,7 +120,7 @@ void* bi_init(int problemSizemax)
    }
    evaluate_environment(pmydata);
 
-   
+
 	tmpheader=pmydata->TMPHEADER;
 	if(tmpheader==NULL) {printf ("\n Cant get header of tmp-file\n"); exit(127);}
 	path=pmydata->DISKPATH;
@@ -162,7 +163,7 @@ void* bi_init(int problemSizemax)
 
 	i=(long)(ds-1);
 	pmydata->maxdeep=(i>>pmydata->POTFILPERDIR==0) ? 0 : (long)(log((double)(i>>pmydata->POTFILPERDIR))/log(2))+1;
-   
+
 	return (void *)pmydata;
 }
 
@@ -196,17 +197,17 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	ds=pmydata->DISKSPACE;
 	fs=pmydata->FILESIZE;
 	mr=pmydata->MAXREPEAT;
-	nc=pmydata->NUMCHANNELS; 
+	nc=pmydata->NUMCHANNELS;
 	cf=pmydata->CHANNELFACTOR;
 	rs=pmydata->REPEATSTOP;
 	fp=pmydata->FILESPERTHREAD;
 	ds=ds/fs;
 
-	
+
 /* check wether the pointer to store the dresults in is valid or not */
   if (dresults == NULL) return 1;
 
-/*recalculation of the "simulated ds" from the given imyproblemSize 
+/*recalculation of the "simulated ds" from the given imyproblemSize
   (imyproblemsiz is converted into set{1,5,10,50,100,...} - begin*/
 	if((2*fs)>(pow(10,(double)((long)(log10(fs))+1)))) imyproblemSize=(pow(10,(double)((long)(log10(fs))+1)));
 	else imyproblemSize=(pow(10,(double)((long)(log10(fs))+1))/2);
@@ -219,7 +220,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	}
 /*end*/
 
-	
+
 	printf("\ngiven problemSize=%d",iproblemSize);
 	printf("\ncalc. problemSize=%d",imyproblemSize);
 	printf("\npath=%s",pmydata->path);
@@ -237,7 +238,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 
 	/*array(s) for time measurement*/
 	btime=calloc((int)(ds*mr), sizeof(double));
-	if (btime==NULL) { printf("\nCant get memory for time measurement!\n"); exit(127); } 
+	if (btime==NULL) { printf("\nCant get memory for time measurement!\n"); exit(127); }
 	etime=calloc((int)(ds*mr), sizeof(double));
 	if (etime==NULL) { printf("\nCant get memory for time measurement!\n"); exit(127); }
 
@@ -255,9 +256,9 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	for(i=0;i<tawsize;i++)
 	{
 	     taw[i].problemSize = (long)imyproblemSize;
-	     taw[i].btime = &btime[i]; 
+	     taw[i].btime = &btime[i];
 	     taw[i].etime = &etime[i];
-	     taw[i].global = (iods *)pmydata;	     
+	     taw[i].global = (iods *)pmydata;
 	}
 
 	i=0;
@@ -266,7 +267,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 	while(i<(long)(ds*mr) && i<(long)(rs*imyproblemSize))
 	{
 		/*calling the read function (=the actual measurement function)*/
-		tpool_add_work(threadpool, &thread_readfile,(void *)&taw[i]); 
+		tpool_add_work(threadpool, &thread_readfile,(void *)&taw[i]);
 		i++;
 	}
 	tpool_destroy(threadpool, 1);
@@ -285,22 +286,22 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults)
 
 	/*y-axis = average transfer rate*/
 	dresults[1]=(double)(i)*fs*fp/(max-min);
-	
+
 	if(chdir(pmydata->startpath)) printf("\nCant change to directory %s\n. You will probably not get an output-file.", pmydata->startpath);
-	
+
 	free(taw);
 	free(btime);
 	free(etime);
 
 /*
-  dstart = bi_gettime(); 
-  dres = simple(&imyproblemSize); 
+  dstart = bi_gettime();
+  dres = simple(&imyproblemSize);
   dend = bi_gettime();
 
 
   dtime = dend - dstart;
   dtime -= dTimerOverhead;
-      
+
   if(dtime < dTimerGranularity) dtime = INVALID_MEASUREMENT;
 
   dresults[0] = (double)imyproblemSize;

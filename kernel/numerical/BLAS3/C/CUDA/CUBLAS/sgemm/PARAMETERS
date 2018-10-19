@@ -10,7 +10,14 @@
 # Kernel: Measurement of Nvidia CUBLAS sgemm performance
 #####################################################################
 
-LD_LIBRARY_PATH=${CUDA_LIB}:$LD_LIBRARY_PATH
 
  # Kernel iterates over PROBLEMLIST
- BENCHIT_KERNEL_PROBLEMLIST="4096-4608/2"
+ BENCHIT_KERNEL_PROBLEMLIST="17-16384/17"
+
+
+ONE="1"
+if [ -n "${BENCHIT_NUM_GPUS}" ]; then
+if [ ${BENCHIT_NUM_GPUS} -lt ${ONE} ]; then
+BENCHIT_NUM_GPUS=1
+fi
+fi

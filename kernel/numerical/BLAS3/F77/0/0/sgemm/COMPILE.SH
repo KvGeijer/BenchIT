@@ -22,68 +22,24 @@ if [ -z "${BENCHIT_COMPILE_SH_IS_CALLED}" ]; then
 fi
 
 
-LOCAL_KERNEL_COMPILER="C"
-LOCAL_KERNEL_COMPILERFLAGS="-c -DADD_"
-LOCAL_KERNEL_FILES="cblas_sgemm.c cblas_xerbla.c cblas_globals.c"
+LOCAL_KERNEL_COMPILER="F77"
+LOCAL_KERNEL_COMPILERFLAGS=""
+LOCAL_KERNEL_FILES="sgemm.f lsame.f xerbla.f"
 
-LOCAL_MODULE_FILES="kernel_main.c"
+LOCAL_MODULE_FILES="kernel_main.c cblas_sgemm.c cblas_xerbla.c cblas_globals.c"
 
 LOCAL_BENCHIT_COMPILER="C"
-LOCAL_BENCHIT_COMPILERFLAGS=""
+# If you have a undefined reference to a BLAS function, replace the default -DADD_ flag with one of the flags -DUPCASE or -DNOCHANGE
+LOCAL_BENCHIT_COMPILERFLAGS="-DADD_"
 
 LOCAL_LINKERFLAGS=""
 
+# netlib blas library
+TOOLSDIR="${BENCHITROOT}/tools/"
+BLASSRC="${TOOLSDIR}CBLAS/src/"
+LOCAL_FILES_TO_COPY="${TOOLSDIR}BLAS/sgemm.f ${TOOLSDIR}BLAS/lsame.f ${TOOLSDIR}BLAS/xerbla.f ${BLASSRC}cblas_globals.c ${BLASSRC}cblas_xerbla.c"
+LOCAL_FILES_TO_COPY="${LOCAL_FILES_TO_COPY} ${BLASSRC}cblas_sgemm.c ${BLASSRC}cblas.h ${BLASSRC}cblas_f77.h"
+LOCAL_FILES_TO_DELETE="*.f cblas_*.c cblas.h cblas_f77.h"
+
 BENCHIT_COMMENT="sgemm"
 export BENCHIT_COMMENT
-
-# FOLLOWING: Unprocessed commands
-# TODO: Check if you need them
-
-BENCHIT_COMMENT="sgemm"
-export BENCHIT_COMMENT
-TOOLSDIR="${BENCHITROOT}/tools"
-if [ -f "${TOOLSDIR}/BLAS/sgemm.f" ] && [ -f "${TOOLSDIR}/BLAS/lsame.f" ] && [ -f "${TOOLSDIR}/BLAS/xerbla.f" ] && [ -f "${TOOLSDIR}/CBLAS/src/cblas_globals.c" ] && [ -f "${TOOLSDIR}/CBLAS/src/cblas_xerbla.c" ] && [ -f "${TOOLSDIR}/CBLAS/src/cblas_sgemm.c" ] && [ -f "${TOOLSDIR}/CBLAS/src/cblas.h" ] && [ -f "${TOOLSDIR}/CBLAS/src/cblas_f77.h" ]; then
-	cp ${TOOLSDIR}/BLAS/sgemm.f              ${KERNELDIR}
-	cp ${TOOLSDIR}/BLAS/lsame.f              ${KERNELDIR}
-	cp ${TOOLSDIR}/BLAS/xerbla.f             ${KERNELDIR}
-	cp ${TOOLSDIR}/CBLAS/src/cblas_globals.c ${KERNELDIR}
-	cp ${TOOLSDIR}/CBLAS/src/cblas_xerbla.c  ${KERNELDIR}
-	cp ${TOOLSDIR}/CBLAS/src/cblas_sgemm.c   ${KERNELDIR}
-	cp ${TOOLSDIR}/CBLAS/src/cblas.h         ${KERNELDIR}
-	cp ${TOOLSDIR}/CBLAS/src/cblas_f77.h     ${KERNELDIR}
-else
-	echo "At least one of the files:"
-	echo "  ${TOOLSDIR}/BLAS/sgemm.f"
-	echo "  ${TOOLSDIR}/BLAS/lsame.f"
-	echo "  ${TOOLSDIR}/BLAS/xerbla.f"
-	echo "  ${TOOLSDIR}/CBLAS/src/cblas_globals.c"
-	echo "  ${TOOLSDIR}/CBLAS/src/cblas_xerbla.c"
-	echo "  ${TOOLSDIR}/CBLAS/src/cblas_sgemm.c"
-	echo "  ${TOOLSDIR}/CBLAS/src/cblas.h"
-	echo "  ${TOOLSDIR}/CBLAS/src/cblas_f77.h"
-	echo "is not available, check Netlib BLAS Library in ${TOOLSDIR}"
-	exit 1
-fi
-BENCHIT_COMPILER="${BENCHIT_CC}"
-BENCHIT_COMPILERFLAGS=""
-BENCHITC_COMPILER="${BENCHIT_CC}"
-C_COMPILE="${BENCHIT_COMPILER} ${BENCHIT_COMPILERFLAGS} -c"
-BENCHITF_COMPILERFLAGS=""
-F_COMPILE="${BENCHIT_F77} ${BENCHITF_COMPILERFLAGS} -c"
-L_FLAGS=""
-F_LINK="${BENCHIT_F77} ${BENCHITF_COMPILERFLAGS} -o ${BENCHIT_KERNELBINARY} *.o ${L_FLAGS}"
-export BENCHIT_COMPILER BENCHIT_COMPILERFLAGS L_FLAGS
-${F_COMPILE} sgemm.f
-${F_COMPILE} lsame.f
-${F_COMPILE} xerbla.f
-${C_COMPILE} -DADD_ cblas_globals.c
-${C_COMPILE} -DADD_ cblas_xerbla.c
-${C_COMPILE} -DADD_ cblas_sgemm.c
-${C_COMPILE} kernel_main.c
-${BENCHITC_COMPILER} -c ${BENCHITROOT}/benchit.c
-${F_LINK}
-if [ ! $? -eq 0 ]; then
-	echo "If you have a undefined reference to a BLAS function, check COMPILE.sh and replace the default -DADD_ flag with one of the flags -DUPCASE or -DNOCHANGE"
-   exit 1
-fi
-rm -f ${KERNELDIR}/*.f ${KERNELDIR}/cblas_*.c ${KERNELDIR}/cblas.h ${KERNELDIR}/cblas_f77.h

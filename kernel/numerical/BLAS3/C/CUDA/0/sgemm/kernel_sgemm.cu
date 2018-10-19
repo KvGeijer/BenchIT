@@ -45,9 +45,8 @@ void matrixMulShared(
     out[c + width * ty + tx] = Csub;
 }
 
-extern "C"
 void sgemm(dim3 gridDim, dim3 blockDim, mydata_t *params, DT alpha)
 {
-		matrixMulShared << <gridDim, blockDim >> >(params->devData[0], 
+		matrixMulShared << <gridDim, blockDim >> >(params->devData[0],
     			params->devData[1], alpha, params->devData[2]);
 }

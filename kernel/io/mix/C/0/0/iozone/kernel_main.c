@@ -26,7 +26,7 @@ mydata_t* mdp;
 void assert_mdp(){
    if (mdp == NULL) mdp = (mydata_t*)malloc(sizeof(mydata_t));
    if (mdp == NULL){
-      fprintf(stderr, "Allocation of structure mydata_t failed\n"); 
+      fprintf(stderr, "Allocation of structure mydata_t failed\n");
       fflush(stderr);
       exit(ENOMEM);
    }
@@ -40,11 +40,11 @@ void evaluate_environment(){
     char * p;
     char unit;
     assert_mdp();
-    
+
     mdp->filesize_min_unit = (char *)malloc(1);
     mdp->filesize_max_unit = (char *)malloc(1);
     mdp->filesize_inc_unit = (char *)malloc(1);
-    
+
     mdp->filename = bi_getenv("BENCHIT_KERNEL_FILENAME", 1);
     mdp->filesize_min = bi_getenv("BENCHIT_KERNEL_FILESIZE_MIN", 1);
     mdp->filesize_max = bi_getenv("BENCHIT_KERNEL_FILESIZE_MAX", 1);
@@ -59,7 +59,7 @@ void evaluate_environment(){
     mdp->options = bi_getenv("BENCHIT_KERNEL_OPTIONS", 1);
 
 //    printf("min=%lu max=%lu inc=%lu\n", mdp->min, mdp->max, mdp->inc);
-    
+
     unit=*(mdp->filesize_min_unit);
     switch (unit){
         case 'k':
@@ -76,7 +76,7 @@ void evaluate_environment(){
              break;
     }
     mdp->min = mdp->min * ii;
-    
+
     unit=*(mdp->filesize_max_unit);
     switch (unit){
         case 'k':
@@ -93,7 +93,7 @@ void evaluate_environment(){
              break;
     }
     mdp->max = mdp->max * ii;
-    
+
     unit=*(mdp->filesize_inc_unit);
     switch (unit){
         case 'k':
@@ -111,13 +111,13 @@ void evaluate_environment(){
     }
     mdp->inc = mdp->inc * ii;
 //    printf("min=%lu max=%lu inc=%lu\n", mdp->min, mdp->max, mdp->inc);
-    
+
     if (0 == strlen(mdp->testlist)){
-        fprintf(stderr, "no tests to commit\n"); 
+        fprintf(stderr, "no tests to commit\n");
         fflush(stderr);
         exit(BENVEMPTY);
     }
-    
+
     /* find out how many values are given in the list */
     p = mdp->testlist;
     inumentries=1; /* first commata means 1 entry already found */
@@ -137,7 +137,7 @@ void evaluate_environment(){
         p = strstr(p,",")+1; /* pointer to next number in string */
         mdp->testarray[ii] = strtol(p, (char **)NULL, 10);
     }
-    
+
 }
 
 
@@ -167,3 +167,252 @@ void bi_getinfo(bi_info * infostruct)
    /* allocating memory for y axis texts and properties */
    allocYAxis(infostruct);
    /* setting up y axis texts and properties */
+   j=0;
+   for (i = 0; i < mdp->nr_tests; i++){
+        iswitch = (int)mdp->testarray[i];
+        switch (iswitch){
+            case 0:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("write");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("rewrite");
+                j++;
+                break;
+
+            case 1:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("read");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("reread");
+                j++;
+                break;
+
+            case 2:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("random read");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("random write");
+                j++;
+                break;
+
+            case 3:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("read backwarts");
+                j++;
+                break;
+
+            case 4:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("rewrite record");
+                j++;
+                break;
+
+            case 5:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("stride read");
+                j++;
+                break;
+
+            case 6:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("fwrite");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("frewrite");
+                j++;
+                break;
+
+            case 7:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("fread");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("freread");
+                j++;
+                break;
+
+            case 8:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("random mix");
+                j++;
+                break;
+
+            case 9:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("pwrite");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("prewrite");
+                j++;
+                break;
+
+            case 10:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("pread");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("preread");
+                j++;
+                break;
+
+            case 11:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("pwritev");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("prewritev");
+                j++;
+                break;
+
+            case 12:
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("preadv");
+                j++;
+                infostruct->yaxistexts[j] = bi_strdup("Bytes/s");
+                infostruct->selected_result[j] = 0;
+                infostruct->base_yaxis[j] = 0;
+                infostruct->legendtexts[j] = bi_strdup("prereadv");
+                j++;
+                break;
+            default:
+                exit(BENVUNKNOWN);
+                break;
+        }
+   }
+   infostruct->numfunctions = j;
+   mdp->numfunctions = j;
+
+   if (DEBUGLEVEL > 3){
+      for (i = 0; i < infostruct->numfunctions; i++){
+         printf("yaxis[%2d]=%s\t\t\tlegend[%2d]=%s\n",
+            i, infostruct->yaxistexts[i], i, infostruct->legendtexts[i]);
+      }
+   }
+}
+
+
+
+void* bi_init(int problemsizemax){
+		char filenamestring[STRINGSIZE];
+
+    assert_mdp();
+    return (void*)mdp;
+
+    /* clean up resultoutputfile */
+    system("rm -f iozone.out");
+
+    /* clean up outputfile */
+    sprintf(filenamestring,"rm -f %s", mdp->filename);
+    system(filenamestring);
+}
+
+
+
+int bi_entry(void* mdpv, int problemsize, double* results){
+    char command[STRINGSIZE];
+    char inputline[MAX_LINE_LENGTH+1];
+    int ii=0, ret=0, j=1;
+    unsigned long filesize;
+    char filesizestring[STRINGSIZE];
+    char * p;
+    FILE * ptr;
+
+
+    if (results == NULL) exit(ENOMEM);
+
+    /* calculate real problemsize in Kbyte*/
+    filesize = mdp->min + (problemsize - 1) * mdp->inc;
+    sprintf(filesizestring, "%lu", filesize);
+
+    for (ii=0; ii<mdp->nr_tests; ii++){
+
+            /* assemble iozone-call */
+        snprintf(command, STRINGSIZE, "./bin/iozone -s %luk -r %s -S %s -L %s %s -i %d -w -f %s -b iozone.xls ",
+        filesize,
+        mdp->recordsize,
+        mdp->cachesize,
+        mdp->cachelinesize,
+        mdp->options,
+        mdp->testarray[ii],
+        mdp->filename);
+        printf("command: %s\n", command);
+
+        /* really bad hack ahead */
+        if ((ptr = popen(command, "r")) != NULL)
+            while (fgets(inputline, MAX_LINE_LENGTH, ptr) != NULL){
+                if ((inputline[0] == '"') &&
+                    (inputline[1] == filesizestring[0])){
+                        p = inputline;
+                        p++; /* skip first */
+                        p = strstr(p,"\""); /* find second " */
+                        p++;
+                        results[j] = (double)strtol(p, (char **)NULL, 10) * 1024;
+                        printf("result - %d - %f \n", j, results[j]);
+                        j++;
+                }
+            }
+        (void) pclose(ptr);
+        popen("sync", "r");
+        //sleep((unsigned int)5);
+    }
+
+    system("rm -f iozone.tmp");
+    system("rm -f iozone.xls");
+
+    results[0] = (double)filesize * 1024;
+    return 0;
+}
+
+/** Clean up the memory
+ */
+void bi_cleanup(void* mdpv)
+{
+   mydata_t* mdp = (mydata_t*)mdpv;
+   if (mdp) free(mdp);
+   return;
+}

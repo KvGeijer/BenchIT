@@ -11,7 +11,6 @@
 #####################################################################
 
  # Kernel iterates over PROBLEMLIST (one dim of the squared matricies)
- # (using problemsizes, which are no multiples of 4 can lead to
+ # (using problemSizes, which are no multiples of 4 can lead to
  # (partial) unaligned data access)
  BENCHIT_KERNEL_PROBLEMLIST="4-600/4"
-

@@ -22,7 +22,7 @@ if [ -z "${BENCHIT_COMPILE_SH_IS_CALLED}" ]; then
 fi
 
 if [ -z "${BENCHIT_CPP_ATLAS}" ] || [ -z "${BENCHIT_LIB_ATLAS}" ]; then
-	echo "No include or library path for ATLAS specified - check \$BENCHIT_CPP_ATLAS and \$BENCHIT_LIB_ATLAS"
+	echo "No include or library path for ATLAS specified - check \$BENCHIT_CPP_ATLAS and \$BENCHIT_LIB_ATLAS" 1>&2
 	exit 1
 fi
 

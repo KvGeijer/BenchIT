@@ -39,8 +39,8 @@ typedef struct mydata
 */
 } mydata_t;
 
-extern void work_1( void );
-extern void work_2( void );
+extern void work_1( int problemSize );
+extern void work_2( int problemSize );
 
 #ifdef __cplusplus
   } // extern "C"

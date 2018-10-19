@@ -13,13 +13,15 @@
  * when publishing results
  *
  *******************************************************************/
- 
+
 #include "interface.h"
 #include <omp.h>
 
 /* for sched_setaffinity */
 //#define _GNU_SOURCE
-//#include <sched.h>
+#ifdef BENCHIT_KERNEL_COMPILE_FOR_PIN_THREADS_TO_CORES
+#include <sched.h>
+#endif
 
 /** The data structure that holds all the data.
  *  Please use this construct instead of global variables.

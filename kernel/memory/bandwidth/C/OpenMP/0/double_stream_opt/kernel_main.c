@@ -3,7 +3,7 @@
  * Contact: developer@benchit.org
  *
  * $Id: kernel_main.c 1 2009-09-11 12:26:19Z william $
- * $URL: svn+ssh://rschoene@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/memory/bandwidth/C/OpenMP/0/double_stream_opt/kernel_main.c $
+ * $URL: svn+ssh://william@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/memory/bandwidth/C/OpenMP/0/double_stream_opt/kernel_main.c $
  * For license details see COPYING in the package base directory
  *******************************************************************/
 /* Kernel: measure Bandwidth inspired by STREAM benchmark (C OMP-version)
@@ -34,7 +34,7 @@
 
 /*  Header for local functions
  */
-void evaluate_environment( void );
+void evaluate_environment(void);
 void *_aligned_malloc(size_t size, size_t alignment);
 void _aligned_free(void *memblock);
 /*
@@ -63,7 +63,7 @@ void *_aligned_offset_malloc(size_t size, size_t alignment, size_t offset)
 /* including the extra sizeof(void*) is overkill on a 32-bit
     machine, since malloc is already 8-byte aligned, as long
     as we enforce alignment >= 8 ...but oh well */
-    p0 = malloc(size + (alignment + sizeof(void*)));
+    p0 = (void*) malloc(size + (alignment + sizeof(void*)));
     if (!p0)
 	return((void*) 0);
     p = ptr_align(p0, alignment, offset);
@@ -86,17 +86,17 @@ void _aligned_free(void *memblock)
 * this defines the number of works. There'll be 4 copy, scale, add, triad
 **/
 
-int n_of_works=4;
+int functionCount=4;
 
 /**
 * minlength: minimal length to measure (defined in parameters)
 * maxlength: maximal length to measure (defined in parameters)
-* accessstride: used to calculate the problemsizes between
+* accessstride: used to calculate the problemSizes between
 * internal_repeats: additional repeats (defined in parameters,
 *                   multiplies with BENCHIT_ACCURACY)
 * offset: offset for memory access (defined in parameters)
 * alignment: alignment for memory (defined in parameters)
-* nMeasurements: number of problemsizes measured (defined in parameters)
+* nMeasurements: number of problemSizes measured (defined in parameters)
 * localAlloc: whether to handle memory local to threads
 * threadPinning: whether to pin threads to cores
 **/
@@ -106,7 +106,7 @@ long accessstride,internal_repeats,offset,alignment,
      nMeasurements, localAlloc, threadPinning;
 
 /**
-* dMemFactor: used to calculate the problemsizes
+* dMemFactor: used to calculate the problemSizes
 * minTimeForOneMeasurement: minimal time allowed for one benchmark
 *                           (defined in parameters)
 **/
@@ -115,19 +115,18 @@ double dMemFactor,minTimeForOneMeasurement;
 
 
 /**  The implementation of the bi_getinfo from the BenchIT interface.
- *   Here the infostruct is filled with informations about the
+ *   Here the infostruct is filled with information about the
  *   kernel.
- *   @param infostruct  a pointer to a structure filled with zero's
+ *   @param infostruct  a pointer to a structure filled with zeros
  */
-void bi_getinfo( bi_info * infostruct )
+void bi_getinfo(bi_info * infostruct)
 {
   char buf[200];
   char buf2[200];
-   int i = 0; /* loop var for n_of_works */
-   (void) memset ( infostruct, 0, sizeof( bi_info ) );
+   int i = 0; /* loop var for functionCount */
    /* get environment variables for the kernel */
    evaluate_environment();
-   
+
    sprintf(buf2,"STREAM inspired benchmark (C+OpenMP)#"
                "OFFSET=%i#"
                "ALIGNMENT=%i#"
@@ -148,8 +147,8 @@ void bi_getinfo( bi_info * infostruct )
                (int)alignment,
                (int)internal_repeats,
                (int)omp_get_max_threads());
-               
-				
+
+
 				if (localAlloc){
 					sprintf(buf,"%slocal alloc#",buf2);
 				} else{
@@ -160,8 +159,8 @@ void bi_getinfo( bi_info * infostruct )
 				} else{
 					sprintf(buf2,"%sthread pinning disabled",buf);
 				}
-   infostruct->codesequence = bi_strdup( buf2 );
-   infostruct->xaxistext = bi_strdup( "Used Memory in kByte" );
+   infostruct->codesequence = bi_strdup(buf2);
+   infostruct->xaxistext = bi_strdup("Used Memory in kByte");
    infostruct->num_measurements = nMeasurements;
    infostruct->num_processes = 1;
    infostruct->num_threads_per_process = omp_get_max_threads();
@@ -170,55 +169,33 @@ void bi_getinfo( bi_info * infostruct )
    infostruct->kernel_execs_pvm = 0;
    infostruct->kernel_execs_omp = 1;
    infostruct->kernel_execs_pthreads = 0;
-   infostruct->numfunctions = n_of_works;
+   infostruct->numfunctions = functionCount;
    infostruct->base_xaxis = 10;
 
    /* allocating memory for y axis texts and properties */
-   infostruct->yaxistexts = malloc( infostruct->numfunctions * sizeof( char* ) );
-   if ( infostruct->yaxistexts == 0 )
-   {
-     fprintf( stderr, "Allocation of yaxistexts failed.\n" ); fflush( stderr );
-     exit( 127 );
-   }
-   infostruct->selected_result = malloc( infostruct->numfunctions * sizeof( int ) );
-   if ( infostruct->selected_result == 0 )
-   {
-     fprintf( stderr, "Allocation of outlier direction failed.\n" ); fflush( stderr );
-     exit( 127 );
-   }
-   infostruct->legendtexts = malloc( infostruct->numfunctions * sizeof( char* ) );
-   if ( infostruct->legendtexts == 0 )
-   {
-     fprintf( stderr, "Allocation of legendtexts failed.\n" ); fflush( stderr );
-     exit( 127 );
-   }
-   infostruct->base_yaxis = malloc( infostruct->numfunctions * sizeof( double ) );
-   if ( infostruct->base_yaxis == 0 )
-   {
-     fprintf( stderr, "Allocation of base yaxis failed.\n" ); fflush( stderr );
-     exit( 127 );
-   }
+   allocYAxis(infostruct);
+   /* setting up y axis texts and properties */
    for (i=0;i<infostruct->numfunctions;i++){
-      infostruct->yaxistexts[i] = bi_strdup( "Bandwidth in GByte/s" );
-      infostruct->selected_result[i] = SELECT_RESULT_HIGHEST;
+      infostruct->yaxistexts[i] = bi_strdup("Bandwidth in GByte/s");
+      infostruct->selected_result[i] = 0;
       infostruct->base_yaxis[i] = 10;
    }
             infostruct->legendtexts[3] =
-               bi_strdup( "Bandwidth Triad" );
+               bi_strdup("Bandwidth Triad");
             infostruct->legendtexts[2] =
-               bi_strdup( "Bandwidth Add" );
+               bi_strdup("Bandwidth Add");
             infostruct->legendtexts[1] =
-               bi_strdup( "Bandwidth Scale" );
+               bi_strdup("Bandwidth Scale");
             infostruct->legendtexts[0] =
-               bi_strdup( "Bandwidth Copy" );
-   if ( DEBUGLEVEL > 3 )
+               bi_strdup("Bandwidth Copy");
+   if (DEBUGLEVEL > 3)
    {
       /* the next for loop: */
       /* this is for your information only and can be ereased if the kernel works fine */
-      for ( i = 0; i < infostruct->numfunctions; i++ )
+      for (i = 0; i < infostruct->numfunctions; i++)
       {
-         printf( "yaxis[%2d]=%s\t\t\tlegend[%2d]=%s\n",
-            i, infostruct->yaxistexts[i], i, infostruct->legendtexts[i] );
+         printf("yaxis[%2d]=%s\t\t\tlegend[%2d]=%s\n",
+            i, infostruct->yaxistexts[i], i, infostruct->legendtexts[i]);
       }
    }
 }
@@ -230,33 +207,33 @@ void bi_getinfo( bi_info * infostruct )
  *  But making usage always of the same memory is faster.
  *  HAVE A LOOK INTO THE HOWTO !
  */
-void* bi_init( int problemsizemax )
+void* bi_init(int problemsizemax)
 {
    mydata_t* mdp;
-   mdp = (mydata_t*)malloc( sizeof( mydata_t ) );
-   if ( mdp == 0 )
+   mdp = (mydata_t*)malloc(sizeof(mydata_t));
+   if (mdp == 0)
    {
-      fprintf( stderr, "Allocation of structure mydata_t failed\n" ); fflush( stderr );
-      exit( 127 );
+      fprintf(stderr, "Allocation of structure mydata_t failed\n"); fflush(stderr);
+      exit(127);
    }
    /* malloc our own arrays in here */
    mdp->a=(double**)malloc(sizeof(double*)*omp_get_max_threads());
    if (mdp->a==0)
    {
-      fprintf( stderr, "Allocation of structure a failed\n" ); fflush( stderr );
-      exit( 127 );
+      fprintf(stderr, "Allocation of structure a failed\n"); fflush(stderr);
+      exit(127);
    }
    mdp->b=(double**)malloc(omp_get_max_threads()*sizeof(double*));
    if (mdp->b==0)
    {
-      fprintf( stderr, "Allocation of structure b failed\n" ); fflush( stderr );
-      exit( 127 );
+      fprintf(stderr, "Allocation of structure b failed\n"); fflush(stderr);
+      exit(127);
    }
    mdp->c=(double**)malloc(omp_get_max_threads()*sizeof(double*));
    if (mdp->c==0)
    {
-      fprintf( stderr, "Allocation of structure c failed\n" ); fflush( stderr );
-      exit( 127 );
+      fprintf(stderr, "Allocation of structure c failed\n"); fflush(stderr);
+      exit(127);
    }
    /* allocate memory on the correct threads! */
    #pragma omp parallel
@@ -286,9 +263,9 @@ void* bi_init( int problemsizemax )
                       (int)omp_get_num_threads(),
                       (int)(maxlength/2+offset)));
         if (a==0){
-          fprintf( stderr, "Allocation of structure a[%i] failed\n",num );
-          fflush( stderr );
-          exit( 127 );
+          fprintf(stderr, "Allocation of structure a[%i] failed\n",num);
+          fflush(stderr);
+          exit(127);
         }
    	    mdp->b[num]=_aligned_malloc((maxlength/2+offset)*sizeof(double),alignment);
    	    b =mdp->b[num];
@@ -296,11 +273,11 @@ void* bi_init( int problemsizemax )
                       (int)omp_get_thread_num(),
                       (int)omp_get_num_threads(),
                       (int)(maxlength+offset)));
-                    
+
         if (b==0){
-          fprintf( stderr, "Allocation of structure b[%i] failed\n",num );
-          fflush( stderr );
-          exit( 127 );
+          fprintf(stderr, "Allocation of structure b[%i] failed\n",num);
+          fflush(stderr);
+          exit(127);
         }
    	    mdp->c[num]=_aligned_malloc((maxlength/2+offset)*sizeof(double),alignment);
    	    c =mdp->c[num];
@@ -309,9 +286,9 @@ void* bi_init( int problemsizemax )
                       (int)omp_get_num_threads(),
                       (int)(maxlength+offset)));
         if (c==0){
-          fprintf( stderr, "Allocation of structure c[%i] failed\n",num );
-          fflush( stderr );
-          exit( 127 );
+          fprintf(stderr, "Allocation of structure c[%i] failed\n",num);
+          fflush(stderr);
+          exit(127);
         }
       	for (i=0;i<maxlength/2+offset;i++){
    	      a[i]=1.0;
@@ -336,7 +313,7 @@ void* bi_init( int problemsizemax )
  *  @return 0 if the measurment was sucessfull, something
  *          else in the case of an error
  */
-int bi_entry( void* mdpv, int problemsize, double* results )
+int bi_entry(void* mdpv, int problemsize, double* results)
 {
   double time[4][internal_repeats];
   double best[4];
@@ -361,7 +338,7 @@ int bi_entry( void* mdpv, int problemsize, double* results )
    IDL(3,printf ("current number of moved doubles:%i\n",
                     numberOfMovedDoubles));
   /* check wether the pointer to store the results in is valid or not */
-  if ( results == NULL ) return 1;
+  if (results == NULL) return 1;
   /* do the measurement */
 	for (k=0;k<internal_repeats;k++)
 	{
@@ -387,7 +364,7 @@ int bi_entry( void* mdpv, int problemsize, double* results )
     repeats=repeats/10;
 	  time[1][k]=time[1][k]/repeats;
       IDL(3,printf ("start add"));
-	  
+
 	  do{
         time[2][k]=add_(c,a,b,numberOfMovedDoubles/3,offset,repeats,localAlloc,threadPinning);
         // check whether overflow
@@ -407,7 +384,7 @@ int bi_entry( void* mdpv, int problemsize, double* results )
 	  time[3][k]=time[3][k]/repeats;
       IDL(3,printf ("done"));
   }
-  /* calculating the best time of all internal repititions */ 
+  /* calculating the best time of all internal repititions */
   best[0]=time[0][0];
   best[1]=time[1][0];
   best[2]=time[2][0];
@@ -424,11 +401,11 @@ int bi_entry( void* mdpv, int problemsize, double* results )
     results[0] *= omp_get_max_threads();
    IDL(3,printf ("current problemsize:%e\n",
                   results[0]));
-  for ( j = 0; j < n_of_works; j++ )
+  for (j = 0; j < functionCount; j++)
   {
     /* remember resuls[0] is in kByte */
     gbpersec = (1.0E-6*results[0])/(best[j]);
-    if( gbpersec <=0.0 ) gbpersec = INVALID_MEASUREMENT;
+    if(gbpersec <=0.0) gbpersec = INVALID_MEASUREMENT;
     // store the results
     results[j + 1] = gbpersec;
   }
@@ -437,7 +414,7 @@ int bi_entry( void* mdpv, int problemsize, double* results )
 
 /** Clean up the memory
  */
-void bi_cleanup( void* mdpv )
+void bi_cleanup(void* mdpv)
 {
    mydata_t* mdp = (mydata_t*)mdpv;
    int i=0;
@@ -466,7 +443,7 @@ void bi_cleanup( void* mdpv )
      free(mdp->c);
    }
    // free structure
-   if ( mdp ) free( mdp );
+   if (mdp) free(mdp);
    return;
 }
 
@@ -509,7 +486,7 @@ void evaluate_environment()
   }
   else
     internal_repeats=atoi(envir);
-  
+
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_OFFSET",1);
   if (envir==NULL)
@@ -522,9 +499,9 @@ void evaluate_environment()
   if (offset%8!=0){
     offset=(offset-offset%8)/8;
   	printf("BENCHIT_KERNEL_OFFSET is not a multiple of 8! Using %i instead.",
-  	        (int)offset );
+  	        (int)offset);
   }
-  
+
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_ALIGNMENT_BORDER",1);
   if (envir==NULL)
@@ -534,7 +511,7 @@ void evaluate_environment()
   }
   else
     alignment=atoi(envir);
-  
+
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_MIN_TIME_FOR_ONE_MEASUREMENT",1);
   if (envir==NULL)
@@ -543,7 +520,7 @@ void evaluate_environment()
   	minTimeForOneMeasurement=1.0E-5;
   } else
     minTimeForOneMeasurement=atoi(envir)*1.0E-6;
-    
+
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_LOCAL_ALLOC",1);
   if (envir==NULL)

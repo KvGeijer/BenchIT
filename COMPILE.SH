@@ -36,7 +36,8 @@ checkCompilerAvailability()
 		if { "${BENCHITROOT}/tools/features" have $1 ;} then
 			echo "OK"
 		else
-			printf "\nCompiler \"$1\" not found. Cannot continue without it!\n"
+		    echo "FAILED"
+			printf "\nCompiler \"$1\" not found. Cannot continue without it!\n" 1>&2
 			cleanupAndExit 98
 		fi
 		sync
@@ -51,7 +52,8 @@ checkLinkerAvailability()
 		if { "${BENCHITROOT}/tools/features" have $1 ;} then
 			echo "OK"
 		else
-			printf "\Linker \"$1\" not found. Cannot continue without it!\n"
+			echo "FAILED"
+			printf "\nLinker \"$1\" not found. Cannot continue without it!\n" 1>&2
 			cleanupAndExit 99
 		fi
 		sync
@@ -72,8 +74,8 @@ COMPILE_GLOBAL=1
 
 if [ "${KERNELDIR}" = "${BENCHITROOT}" ]; then
 	# Global COMPILE.SH was called without a target
-	printf "\nERROR: No kernel for compile specified.\n"
-	printf "Use COMPILE.SH -h to view the syntax of this command.\n\n"
+	printf "\nERROR: No kernel for compile specified.\n" 1>&2
+	printf "Use COMPILE.SH -h to view the syntax of this command.\n\n" 1>&2
 	exit 1
 fi
 
@@ -217,7 +219,7 @@ fix_alias()
 # Fix aliases
 LOCAL_KERNEL_COMPILER=$(fix_alias "$LOCAL_KERNEL_COMPILER")
 LOCAL_BENCHIT_COMPILER=$(fix_alias "$LOCAL_BENCHIT_COMPILER")
-LOCAL_LINKER=$(fix_alias "$LOCAL_LINKERR")
+LOCAL_LINKER=$(fix_alias "$LOCAL_LINKER")
 
 if [ "${HLL}" = "JAVA" ] && [ "$LOCAL_KERNEL_COMPILER" != "JAVAC" ]; then
 	echo "JAVA kernels have to be compiled with JAVA compiler"
@@ -325,14 +327,10 @@ if [ "${LOCAL_KERNEL_FILES}" != "" ]; then
 	fi
 fi
 
-if [ $USEJAVA = 0 ]; then 
+if [ $USEJAVA = 0 ]; then
 	if [ "${LOCAL_BENCHIT_COMPILER}" = "" ]; then
 		echo "Benchit compiler not specified!"
 		cleanupAndExit 93
-	fi
-	if [ "${LOCAL_MODULE_FILES}" = "" ]; then
-		echo "Module files not specified!"
-		cleanupAndExit 94
 	fi
 	eval tmpCompiler=\${BENCHIT_${LOCAL_BENCHIT_COMPILER}}
 	if [ $tmpCompiler ]; then
@@ -428,7 +426,7 @@ set > "tmp.env"
 ./envhashbuilder
 
 showAndExecute "cd ${KERNELDIR}"
-if [ $USEJAVA = 1 ]; then 
+if [ $USEJAVA = 1 ]; then
 	printf "\n###########\n# PREPARE #\n###########\n"
 	sync
 	if [ ! -d "${DEST}" ]; then
@@ -454,7 +452,7 @@ if [ $USEJAVA = 1 ]; then
   chmod +x "${RUN_FILE}"
 
 	showAndExecute "cd ${DEST}"
-  
+
 	printf "\n###########\n# COMPILE #\n###########\n"
 	sync
   showAndExecute "${KERNEL_COMPILE}"
@@ -470,9 +468,11 @@ else
       cleanupAndExit 81
     fi
 	fi
-  showAndExecute "${MODULE_COMPILE}"
-	if [ $? -ne 0 ]; then
-    cleanupAndExit 82
+	if [ "${LOCAL_MODULE_FILES}" != "" ]; then
+    showAndExecute "${MODULE_COMPILE}"
+	  if [ $? -ne 0 ]; then
+      cleanupAndExit 82
+    fi
   fi
   showAndExecute "${BENCHIT_COMPILE}"
 	if [ $? -ne 0 ]; then

@@ -11,7 +11,7 @@
 
 #include "dotproduct.h"
 
-/* Reads the environment variables used by this kernel. 
+/* Reads the environment variables used by this kernel.
  * see interface.h for bi_getenv("name", exit_on_error)
  */
 void evaluate_environment(mydata_t * pmydata) {
@@ -78,6 +78,12 @@ void bi_getinfo(bi_info * infostruct) {
    /* allocating memory for y axis texts and properties */
    allocYAxis(infostruct);
    /* setting up y axis texts and properties */
+   b = penv->threadsCountStart;
+   for (a = 0; a <= penv->threadsCountDouble; a++) {
+      /* setting up y axis texts and properties */
+      infostruct->yaxistexts[a] = bi_strdup("s");
+      infostruct->selected_result[a] = 1;
+      infostruct->base_yaxis[a] = 0;        // logarythmic axis 10^x
       infostruct->yaxistexts[a] = bi_strdup("s");
       infostruct->selected_result[a] = SELECT_RESULT_LOWEST;
       infostruct->base_yaxis[a] = 0;        // logarythmic axis 10^x
@@ -270,7 +276,7 @@ int bi_entry(void *mdpv, int iproblemSize, double *dresults) {
          dtime[ii] = INVALID_MEASUREMENT;
 
       /* store the results in results[1], results[2], ... [1] for the first
-       * function, [2] for the second function and so on ... the index 0 always 
+       * function, [2] for the second function and so on ... the index 0 always
        * keeps the value for the x axis */
       dresults[ii + 1] = (dtime[ii] != INVALID_MEASUREMENT) ? dtime[ii]
          : INVALID_MEASUREMENT;
@@ -302,4 +308,3 @@ void bi_cleanup(void *mdpv) {
 
    return;
 }
-

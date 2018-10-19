@@ -11,5 +11,4 @@
 #####################################################################
 
  # Kernel iterates over PROBLEMLIST
- BENCHIT_KERNEL_PROBLEMLIST="1-500/1"
-
+ BENCHIT_KERNEL_PROBLEMLIST="1-1500/1"

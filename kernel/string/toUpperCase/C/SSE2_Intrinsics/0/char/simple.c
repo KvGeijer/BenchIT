@@ -11,7 +11,7 @@
 
 #include "simple.h"
 #include <emmintrin.h>
- 
+
 myinttype toUpperCaseSSE(char * field, myinttype size)
 {
 	myinttype i=0;
@@ -36,7 +36,7 @@ myinttype toUpperCaseSSE(char * field, myinttype size)
 			field[i]-=a_to_A;
 	for (i=before;i<size;i=i+16)
 	{
-		load_field=_mm_load_si128(&field[i]);
+		load_field=_mm_load_si128((__m128i*)&field[i]);
 		// get mask for chars to change
 		// must be greater equal then 'a' , greater then 'a'-1
 		gt_mask = _mm_cmpgt_epi8(load_field,a_field);
@@ -47,7 +47,7 @@ myinttype toUpperCaseSSE(char * field, myinttype size)
 		// build values to add
 		sub=_mm_and_si128(change_mask,a_to_A_difference);
 		load_field=_mm_subs_epi8(load_field,sub);
-		_mm_store_si128(&field[i],load_field);
+		_mm_store_si128((__m128i*)&field[i],load_field);
 	}
 	i=i-16;
 	for (i;i<size;i++)
@@ -73,7 +73,7 @@ myinttype toUpperCaseSSEunaligned(char * field, myinttype size)
 	long long result[2]={0,0};
 	for (i=0;i<size;i=i+16)
 	{
-		load_field=_mm_loadu_si128(&field[i]);
+		load_field=_mm_loadu_si128((__m128i*)&field[i]);
 		// get mask for chars to change
 		// must be greater equal then 'a' , greater then 'a'-1
 		gt_mask = _mm_cmpgt_epi8(load_field,a_field);
@@ -84,7 +84,7 @@ myinttype toUpperCaseSSEunaligned(char * field, myinttype size)
 		// build values to add
 		sub=_mm_and_si128(change_mask,a_to_A_difference);
 		load_field=_mm_subs_epi8(load_field,sub);
-		_mm_storeu_si128(&field[i],load_field);
+		_mm_storeu_si128((__m128i*)&field[i],load_field);
 	}
 	i=i-16;
 	for (i;i<size;i++)
@@ -102,4 +102,3 @@ myinttype toUpperCase(char * field, myinttype size)
 			field[i]-=a_to_A;
   return 1;
 }
-

@@ -18,7 +18,7 @@
 
 #define NUM_FUNC 2
 
-/* Reads the environment variables used by this kernel. 
+/* Reads the environment variables used by this kernel.
  * see interface.h for bi_getenv("name", exit_on_error)
  */
 void evaluate_environment(mydata_t * pmydata) {
@@ -90,21 +90,21 @@ void bi_getinfo(bi_info * infostruct) {
 void* bi_init(int problemSizemax) {
    mydata_t * pmydata;
    myinttype ii, m, tmp;
-   
+
    pmydata = (mydata_t*)malloc(sizeof(mydata_t));
    if (pmydata == 0) {
       fprintf(stderr, "Allocation of structure mydata_t failed\n");
       fflush(stderr);
       exit(127);
    }
-   
+
    m = (myinttype)bi_get_list_element(1);
    for (ii=2; ii<=problemSizemax; ii++) {
       tmp = (myinttype)bi_get_list_element(ii);
       if(tmp>m) m = tmp;
    }
    pmydata->maxsize = m;
-   
+
    IDL(3, printf("\nAllocate vector intarray with size %d\n",m));
    pmydata->intarray = (int*)malloc(m * sizeof(int));
    if (pmydata->intarray == 0) {
@@ -113,7 +113,7 @@ void* bi_init(int problemSizemax) {
    }
    for (ii=0; ii<m; ii++)
       pmydata->intarray[ii] = rand();
-   
+
    IDL(3, printf("\nAllocate vector floatarray with size %d\n",m));
    pmydata->floatarray = (float*)malloc(m * sizeof(float));
    if (pmydata->floatarray == 0) {
@@ -123,7 +123,7 @@ void* bi_init(int problemSizemax) {
    for (ii=0; ii<m; ii++)
       pmydata->floatarray[ii] = (float) (rand() + rand() /
                                 rand() * pow(rand(), 3));
-   
+
    return (void *)pmydata;
 }
 
@@ -147,13 +147,13 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
    myinttype ii = 0, imyproblemSize, numloop[NUM_FUNC];
    /* cast void* pointer */
    mydata_t * pmydata = (mydata_t *) mdpv;
-   
+
    /* pointers to global source array, local array contains sorted elements */
    mydata_t *origArray, *sortArray;
 
    /* get current problem size from problemlist */
    imyproblemSize = (myinttype)bi_get_list_element(iproblemSize);
-   
+
    /* check wether the pointer to store the results in is valid or not */
    if (dresults == NULL)
       return 1;
@@ -161,7 +161,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
    /* assignment and allocation of structures */
    origArray = pmydata;
    sortArray = (mydata_t*) malloc(sizeof(mydata_t));
-   
+
    sortArray->intarray = (int*) malloc((imyproblemSize) * sizeof(int));
    numloop[0] = 1;
    do {
@@ -178,8 +178,8 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
       numloop[0] <<= 3;	/* numloop = numloop * 8 */
    } while (dend[0]-dstart[0] < 0.01);
    numloop[0] >>= 3;	/* undo last shift */
-   
-   sortArray->floatarray = >(float*) malloc((imyproblemSize) * sizeof(float));
+
+   sortArray->floatarray = (float*) malloc((imyproblemSize) * sizeof(float));
    numloop[1] = 1;
    do {
       /* copying float elements */
@@ -195,30 +195,30 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
       numloop[1] <<= 3;	/* numloop = numloop * 8 */
    } while (dend[1]-dstart[1] < 0.01);
    numloop[1] >>= 3;	/* undo last shift */
-   
+
    /* store results */
    dresults[0] = (double)imyproblemSize;
-   
+
    for (ii=0; ii<NUM_FUNC; ii++) {
       /* calculate the used time */
       dtime[ii] = dend[ii] - dstart[ii];
       dtime[ii] -= dTimerOverhead;
-      
+
       /* If the operation was too fast to be measured by the timer function,
-       * mark the result as invalid 
+       * mark the result as invalid
        */
       if (dtime[ii] < dTimerGranularity)
          dtime[ii] = INVALID_MEASUREMENT;
-      
+
       /* store the results in results[1], results[2], ...
        * [1] for the first function, [2] for the second function
        * and so on ...
        * the index 0 always keeps the value for the x axis
        */
-      dresults[ii+1] = (dtime[ii]!=INVALID_MEASUREMENT) ? 
+      dresults[ii+1] = (dtime[ii]!=INVALID_MEASUREMENT) ?
          dtime[ii] / numloop[ii] : INVALID_MEASUREMENT;
    }
-   
+
    /* verification of the sorted integers
     * -> if it failse print warning */
    if (!(verifyi(sortArray->intarray, imyproblemSize)))
@@ -233,7 +233,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
    /* free used pointers */
    free(sortArray->floatarray);
    free(sortArray);
-   
+
    return 0;
 }
 
@@ -241,7 +241,7 @@ int bi_entry(void * mdpv, int iproblemSize, double * dresults) {
  */
 void bi_cleanup(void* mdpv) {
    mydata_t * pmydata = (mydata_t*)mdpv;
-   
+
    if (pmydata) {
       /* free arrays contains elements to sort */
       if (pmydata->intarray)
@@ -251,6 +251,6 @@ void bi_cleanup(void* mdpv) {
       /* free global structure */
       free(pmydata);
    }
-   
+
    return;
 }

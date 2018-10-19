@@ -12,10 +12,10 @@
 #include "work.h"
 #include "interface.h"
 
-void work_1(void)
+void work_1(int problemSize)
 {
 }
 
-void work_2(void)
+void work_2(int problemSize)
 {
 }

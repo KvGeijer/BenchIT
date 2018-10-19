@@ -13,5 +13,6 @@
  # Kernel iterates over PROBLEMLIST (one dim of the squared matricies)
  # (using problemsizes which are no multiples of 2 will lead to unaligned
  # memory access)
- BENCHIT_KERNEL_PROBLEMLIST="2-600/2"
+ BENCHIT_KERNEL_PROBLEMLIST="2-60/2"
 
+echo $LOCALDEFS

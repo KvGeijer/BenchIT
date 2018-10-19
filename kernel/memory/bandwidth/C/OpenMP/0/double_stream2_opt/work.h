@@ -4,7 +4,9 @@
 
 /* for sched_setaffinity */
 //#define _GNU_SOURCE
-//#include <sched.h>
+#ifdef BENCHIT_KERNEL_COMPILE_FOR_PIN_THREADS_TO_CORES
+#include <sched.h>
+#endif
 
 typedef struct mydata
 {

@@ -31,7 +31,7 @@ typedef struct mydata
    myinttype min;
    myinttype max;
    myinttype steps;
-   myinttype* problemsizes;
+   myinttype* problemSizes;
    fftw_complex* in;
    fftw_complex* out;
    fftw_complex* inout;
@@ -39,7 +39,3 @@ typedef struct mydata
 } mydata_t;
 
 #endif
-
-
-
-

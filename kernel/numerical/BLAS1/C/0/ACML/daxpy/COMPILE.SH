@@ -22,7 +22,7 @@ if [ -z "${BENCHIT_COMPILE_SH_IS_CALLED}" ]; then
 fi
 
 if [ -z "${BENCHIT_CPP_ACML}" ] || [ -z "${BENCHIT_LIB_ACML}" ]; then
-	echo "No include or library path for acml specified - check \$BENCHIT_CPP_ACML and \$BENCHIT_LIB_ACML"
+	echo "No include or library path for acml specified - check \$BENCHIT_CPP_ACML and \$BENCHIT_LIB_ACML" 1>&2
 	exit 1
 fi
 

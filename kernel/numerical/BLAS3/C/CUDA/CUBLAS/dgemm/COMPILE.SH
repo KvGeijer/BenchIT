@@ -4,10 +4,10 @@
 # Contact: developer@benchit.org
 #
 # $Id: COMPILE.SH 1 2011-01-27 fschmitt $
-# $URL: svn+ssh://benchit@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/numerical/BLAS3/C/CUDA/CUBLAS/dgemm/COMPILE.SH $
+# $URL: svn+ssh://benchit@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/numerical/BLAS3/C/CUDA/CUBLAS/sgemm/COMPILE.SH $
 # For license details see COPYING in the package base directory
 #####################################################################
-# Kernel: Measurement of Nvidia CUBLAS dgemm performance
+# Kernel: Measurement of Nvidia CUBLAS sgemm performance
 #####################################################################
 
 # If it's not set, the user
@@ -21,13 +21,11 @@ if [ -z "${BENCHIT_COMPILE_SH_IS_CALLED}" ]; then
    exit 0
 fi
 
-LOCAL_KERNEL_COMPILER="NONE"
+LOCAL_KERNEL_COMPILER="CXX"
 LOCAL_KERNEL_COMPILERFLAGS=""
-LOCAL_KERNEL_FILES=""
+LOCAL_KERNEL_FILES="kernel_main.c"
 
-LOCAL_MODULE_FILES="kernel_main.c"
+LOCAL_MODULE_FILES="empty.c"
 
-LOCAL_BENCHIT_COMPILER="CUDA"
-LOCAL_BENCHIT_COMPILERFLAGS=""
 
-LOCAL_LINKERFLAGS="-lcublas"
+LOCAL_LINKERFLAGS="-lcublas -lcudart"

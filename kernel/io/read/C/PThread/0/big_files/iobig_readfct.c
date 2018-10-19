@@ -20,20 +20,21 @@
 #include "interface.h"
 #include "iobig_readfct.h"
 #include "iobigread.h"
+#include "eval.h"
 
-/*this function takes over a number and the length of the path 
+/*this function takes over a number and the length of the path
   and gives back a string with the path that belongs to the number*/
 char *makenumtopath(long num, long digits, char* filename)
 	{
 	long pos, i, j;
-	/*this variable checks the delivered number and checks it digit 
+	/*this variable checks the delivered number and checks it digit
 	  by digit for its binary value*/
 double FILESIZE=0.0, DISKSPACE=0.0, RAMSIZE=0.0 ;
 
 int POTFILPERDIR=0, FILESPERDIR=0, FILESPERTHREAD=0, MAXREPEAT=0,
     REPEATSTOP=0, NUMCHANNELS=0, CHANNELFACTOR=0, TIMELIMIT=0 ;
 
-char * DISKPATH=NULL; 
+char * DISKPATH=NULL;
 char * TMPHEADER=NULL;
 
 iods * pmydata;
@@ -95,7 +96,7 @@ double FILESIZE=0.0, DISKSPACE=0.0, RAMSIZE=0.0 ;
 int POTFILPERDIR=0, FILESPERDIR=0, FILESPERTHREAD=0, MAXREPEAT=0,
     REPEATSTOP=0, NUMCHANNELS=0, CHANNELFACTOR=0, TIMELIMIT=0 ;
 
-char * DISKPATH=NULL; 
+char * DISKPATH=NULL;
 char * TMPHEADER=NULL;
 
 iods * pmydata;
@@ -125,7 +126,7 @@ TIMELIMIT = pmydata->TIMELIMIT;
         buffer=malloc(FILESIZE);
 	if(buffer==NULL) { printf("\nCant get memory to read testfile!\n"); exit(127); }
 
-	/*buffer for all filenames that are read at one call*/	
+	/*buffer for all filenames that are read at one call*/
 	filenamebuffer=malloc(128*FILESPERTHREAD*sizeof(char));
 	if(filenamebuffer==NULL) { printf("\nCant get memory to recover Filename!\n"); exit(127); }
 
@@ -136,7 +137,7 @@ TIMELIMIT = pmydata->TIMELIMIT;
     	    	{
 		/*selection of one file (depending on simulated diskspace)*/
 	    	filenumber=rand()%problemSize;
-		/*converting the (file)number into the appendant position in 
+		/*converting the (file)number into the appendant position in
 		the tree*/
 	    	filename=makenumtopath(filenumber, maxdeep+POTFILPERDIR, (filenamebuffer+128*(FILESPERTHREAD-i-1)));
 		/*open file*/
@@ -153,4 +154,3 @@ TIMELIMIT = pmydata->TIMELIMIT;
 	free(filenamebuffer);
 /*        free(filename);*/
         }
-

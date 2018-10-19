@@ -43,4 +43,7 @@ typedef struct mydata
 	DT *devData[3];
 } mydata_t;
 
+extern "C"
+void sgemm(dim3 gridDim, dim3 blockDim, mydata_t *params, DT alpha);
+
 #endif

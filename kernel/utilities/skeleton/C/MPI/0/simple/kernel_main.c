@@ -34,7 +34,7 @@ void evaluate_environment(mydata_t * pmydata)
    else pmydata->increment = atoi(p);
    MPI_Comm_rank(MPI_COMM_WORLD, &(pmydata->commrank));
    MPI_Comm_size(MPI_COMM_WORLD, &(pmydata->commsize));
- 
+
    if (errors > 0)
    {
       fprintf(stderr, "There's at least one environment variable not set!\n");
@@ -52,7 +52,7 @@ void evaluate_environment(mydata_t * pmydata)
 void bi_getinfo(bi_info * infostruct)
 {
    mydata_t * penv;
-   
+
    penv = (mydata_t *) malloc(sizeof(mydata_t));
 
    /* get environment variables for the kernel */
@@ -73,11 +73,11 @@ void bi_getinfo(bi_info * infostruct)
    /* allocating memory for y axis texts and properties */
    allocYAxis(infostruct);
    /* setting up y axis texts and properties */
-   infostruct->yaxistexts[0] = bi_strdup("s"););
+   infostruct->yaxistexts[0] = bi_strdup("s");
    infostruct->selected_result[0] = SELECT_RESULT_LOWEST;
    infostruct->base_yaxis[0] = 10; //logarythmic axis 10^x
    infostruct->legendtexts[0] = bi_strdup("time in s");
- 
+
    /* free all used space */
    if (penv) free(penv);
 }
@@ -102,7 +102,7 @@ void* bi_init(int problemSizemax)
       exit(127);
    }
    evaluate_environment(pmydata);
-  
+
    IDL(3, printf("\nrank=%d size=%d\n",pmydata->commrank, pmydata->commsize));
    IDL(3, printf("max=%d, min=%d, increment=%d, steps=%d\n",pmydata->max, pmydata->min, pmydata->increment, pmydata->steps));
    return (void *)pmydata;

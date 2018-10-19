@@ -22,7 +22,7 @@ if [ -z "${BENCHIT_COMPILE_SH_IS_CALLED}" ]; then
 fi
 
 if [ -z "${BENCHIT_CPP_MKL}" ] || [ -z "${BENCHIT_LIB_MKL}" ]; then
-	echo "No include or library path for mkl specified - check \$BENCHIT_CPP_MKL and \$BENCHIT_LIB_MKL"
+	echo "No include or library path for mkl specified - check \$BENCHIT_CPP_MKL and \$BENCHIT_LIB_MKL" 1>&2
 	exit 1
 fi
 

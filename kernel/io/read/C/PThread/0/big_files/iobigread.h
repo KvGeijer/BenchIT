@@ -34,7 +34,7 @@ typedef struct io_data_struct
 	int CHANNELFACTOR;
 	int TIMELIMIT;
 
-	char * DISKPATH; 
+	char * DISKPATH;
 	char * TMPHEADER;
 
         char *path;
@@ -44,12 +44,12 @@ typedef struct io_data_struct
 
 /*
     wrapperstruct for
-    readfiles(problemsize, global->maxdeep, btime+i, etime+i);	    
+    readfiles(problemsize, global->maxdeep, btime+i, etime+i);
 */
-typedef struct 
+typedef struct
 	{
 	iods *global;
-	long problemsize;
+	long problemSize;
 	double *btime;
 	double *etime;
 	} thread_arg_wrapper_t;
@@ -57,5 +57,3 @@ typedef struct
 extern void thread_readfile(thread_arg_wrapper_t *taw);
 
 #endif /* #ifndef iobigread_h */
-
-

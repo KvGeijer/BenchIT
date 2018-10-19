@@ -21,7 +21,7 @@
 #include "iobigread.h"
 #include "eval.h"
 
-int removeFiles
+int removeFiles()
 {
 	const char *path, *tmpheader;
 	char *destination, *fileheader, *remove, *systemstring;
@@ -33,7 +33,7 @@ int removeFiles
 	int POTFILPERDIR=0, FILESPERDIR=0, FILESPERTHREAD=0, MAXREPEAT=0,
 		  REPEATSTOP=0, NUMCHANNELS=0, CHANNELFACTOR=0, TIMELIMIT=0 ;
 
-	char * DISKPATH=NULL; 
+	char * DISKPATH=NULL;
 	char * TMPHEADER=NULL;
 
 	iods * pmydata;
@@ -66,7 +66,7 @@ int removeFiles
 	if(tmpheader==NULL) {printf ("\n Cant get header of tmp-file\n"); return 1;}
 	path=DISKPATH;
         if(path==NULL) { printf("\nCant get path for writing!\n"); return 1; }
-	
+
 	/*destination -> tmp file*/
 	destination=malloc((strlen(path)+32)*sizeof(char));
         if(destination==NULL) { printf("\nCant get memory for reading tmp-file!\n"); return 1; }
@@ -81,10 +81,10 @@ int removeFiles
 	for(;;)
 		{
 		fp=fopen(destination, "r");
-		if(fp==NULL) 
-			{ 
-			printf("file with number %ld not found \n", i); 
-			i++; 
+		if(fp==NULL)
+			{
+			printf("file with number %ld not found \n", i);
+			i++;
 			if(i>1024) { printf("\nNo fitting tmp-file found! Sorry, dont know what to clean up.\n"); return 1; }
 			sprintf(destination, "%siobig%ld.tmp", path, i);
 			fp=fopen(destination, "r");
@@ -93,13 +93,13 @@ int removeFiles
 		i++;
 		fscanf(fp, "%[^\n]", fileheader); fgetc(fp);
 		fscanf(fp, "%[^\n]", remove); fgetc(fp);
-		fscanf(fp, "%lf %lf", &ds, &fs); 
+		fscanf(fp, "%lf %lf", &ds, &fs);
 		/*printf("%s\n%s\n%lf %lf\n", fileheader, remove, ds, fs);*/
 		fclose(fp);
 		if((long)ds==(long)dsz && fs==fsz && !(strcmp(tmpheader, fileheader))) break;
 		sprintf(destination, "%siobig%ld.tmp", path, i);
-		} 
-		
+		}
+
 	printf("Found fitting tmp-file.\n");
 
 	/*remove files and tree*/
