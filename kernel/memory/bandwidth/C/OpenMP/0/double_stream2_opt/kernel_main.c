@@ -218,46 +218,43 @@ void* bi_init(int problemsizemax)
       double * a;
       double * b;
       long long mask;
-   		int i;
-   		int num;
-   		num=omp_get_thread_num();
+      unsigned long long i;
+      int num;
+      num=omp_get_thread_num();
 #ifdef BENCHIT_KERNEL_COMPILE_FOR_PIN_THREADS_TO_CORES
     if(threadPinning){
-  	  /* pin to correct core */
- 	  	mask=1<<num;
- 	  	sched_setaffinity(0,sizeof(long long),&mask);
-  	  /* done pinning to correct core */
-  	}
+      /* pin to correct core */
+      mask=1<<num;
+      sched_setaffinity(0,sizeof(long long),&mask);
+      /* done pinning to correct core */
+    }
 #endif
-  	  if (localAlloc||(num==0)){
-  	    /* allocating memory local to thread or using memory from thread 0 */
-   	    mdp->a[num]=_aligned_malloc((maxlength+offset)*sizeof(double),alignment);
-     	  a =mdp->a[num];
+    if (localAlloc||(num==0)){
+       /* allocating memory local to thread or using memory from thread 0 */
+        mdp->a[num]=_aligned_malloc((maxlength+offset)*sizeof(double),alignment);
+        a =mdp->a[num];
         IDL(2,printf ("Thread %i/%i: allocated a:%i\n",
                       (int)omp_get_thread_num(),
                       (int)omp_get_num_threads(),
-                      (int)(maxlength/2+offset)));
+                      (int)(maxlength+offset)));
         if (a==0){
           fprintf(stderr, "Allocation of structure a[%i] failed\n",num);
           fflush(stderr);
           exit(127);
         }
-   	    mdp->b[num]=_aligned_malloc((maxlength+offset)*sizeof(double),alignment);
-   	    b =mdp->b[num];
+        mdp->b[num]=_aligned_malloc((maxlength/2+offset)*sizeof(double),alignment);
+        b=mdp->b[num];
         IDL(2,printf ("Thread %i/%i: allocated b:%i\n",
                       (int)omp_get_thread_num(),
                       (int)omp_get_num_threads(),
-                      (int)(maxlength+offset)));
-
+                      (int)(maxlength/2+offset)));
         if (b==0){
           fprintf(stderr, "Allocation of structure b[%i] failed\n",num);
           fflush(stderr);
           exit(127);
         }
-      	for (i=0;i<maxlength/2+offset;i++){
-   	      a[i]=1.0;
-   	      b[i]=2.0;
-   		  }
+        for (i=0;i<maxlength+offset;i++) a[i]=1.0;
+        for (i=0;i<maxlength/2+offset;i++) b[i]=2.0;
       }
    }
    /*########################################################*/
@@ -297,7 +294,7 @@ int bi_entry(void* mdpv, int problemsize, double* results)
 	unsigned long long numberOfMovedDoubles=0;
 	/* calculating problemsize for this run */
   numberOfMovedDoubles=(unsigned long long)(((double)minlength)*pow(dMemFactor, (problemsize-1)));
-  numberOfMovedDoubles-=(numberOfMovedDoubles%(2*omp_get_max_threads()*8));
+  numberOfMovedDoubles-=(numberOfMovedDoubles%(6*omp_get_max_threads()*8));
    IDL(3,printf ("current number of moved doubles:%lluu\n",
                     numberOfMovedDoubles));
   /* check wether the pointer to store the results in is valid or not */
@@ -329,7 +326,7 @@ int bi_entry(void* mdpv, int problemsize, double* results)
       IDL(3,printf ("start daxpy"));
 
 	  do{
-        time[2][k]=daxpy_(b,a,scalar,numberOfMovedDoubles/2,offset,repeats,localAlloc,threadPinning);
+        time[2][k]=daxpy_(b,a,scalar,numberOfMovedDoubles/3,offset,repeats,localAlloc,threadPinning);
         repeats=repeats*10;
         // check whether overflow
         if (repeats<0) break;
@@ -338,7 +335,7 @@ int bi_entry(void* mdpv, int problemsize, double* results)
 	  time[2][k]=time[2][k]/repeats;
       IDL(3,printf ("start sum"));
 	  do{
-        time[3][k]=sum_(b,&result,numberOfMovedDoubles,offset,repeats,localAlloc,threadPinning);
+        time[3][k]=sum_(a,&result,numberOfMovedDoubles,offset,repeats,localAlloc,threadPinning);
         repeats=repeats*10;
         // check whether overflow
         if (repeats<0) break;

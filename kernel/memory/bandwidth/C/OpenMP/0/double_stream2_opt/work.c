@@ -19,8 +19,8 @@ double copy_(double **alla, double **allb, unsigned long long size, int offset, 
     /* used for pinning threads */
     long long mask;
     /* used for getting correct data */
-		int num,i,k;
-		unsigned long long min,max;
+		int num;
+		unsigned long long i,k,min,max;
 		double *a;
 		double *b;
     num=omp_get_thread_num();
@@ -77,8 +77,8 @@ double sum_(double **alla, double *result, unsigned long long size, int offset, 
 	{
     long long mask;
 		double *a;
-		int num,i,k;
-		unsigned long long min,max;
+		int num;
+		unsigned long long i,k,min,max;
     num=omp_get_thread_num();
     if (localAlloc){
 		  a = alla[num];
@@ -126,8 +126,8 @@ double fill_(double **alla, double scalar, unsigned long long size, int offset, 
 	{
     long long mask;
 		double *a;
-		int num,i,k;
-		unsigned long long min,max;
+		int num;
+		unsigned long long i,k,min,max;
     num=omp_get_thread_num();
     if (localAlloc){
 		  a = alla[num];
@@ -173,8 +173,8 @@ double daxpy_(double **alla, double **allb, double scalar, unsigned long long si
 	#pragma omp parallel
 	{
     long long mask;
-		int num,i,k;
-		unsigned long long min,max;
+		int num;
+		unsigned long long i,k,min,max;
 		double *a;
 		double *b;
     num=omp_get_thread_num();
