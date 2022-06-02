@@ -17,7 +17,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#if BENCHIT_KERNEL_USE_HUGE_PAGES == 1
 #include <sys/mman.h>
+#endif
 
 #ifndef BENCHIT_KERNEL_MIN_ACCESS_LENGTH
 #define BENCHIT_KERNEL_MIN_ACCESS_LENGTH (2048)
@@ -40,9 +42,9 @@ unsigned int random_number(unsigned long max);
 void make_linked_memory(void *mem, long count);
 void init_global_vars(void);
 
-static long minlength, maxlength, accessstride, numjumps;
-static double dMemFactor;
-static long nMeasurements;
+long minlength, maxlength, accessstride, numjumps;
+double dMemFactor;
+long nMeasurements;
 
 static int NUM_COUNTERS;
 static int use_hugepages;
@@ -113,6 +115,7 @@ void *bi_init(int problemSizemax){
   void *mem;
 
   IDL(3, printf("Enter init ... "));
+#if BENCHIT_KERNEL_USE_HUGE_PAGES == 1
   if (use_hugepages) {
     mem = mmap(NULL, maxlength*2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     madvise(mem, maxlength*2, MADV_HUGEPAGE);
@@ -121,7 +124,9 @@ void *bi_init(int problemSizemax){
 	     (double)maxlength);
       exit(127);
     }
-  } else {
+  } else
+#endif  
+  {
     mem = malloc(maxlength*2);
   }
   IDL(3, printf("allocated %.3f MByte\n",

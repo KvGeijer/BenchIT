@@ -26,4 +26,5 @@
  
  # BENCHIT_KERNEL_USE_HUGE_PAGES defines whether huge pages should be used or
  # not: 1 enabled, 0: disabled
+ # Has also to be declared at COMPILE TIME if it should be used!
  BENCHIT_KERNEL_USE_HUGE_PAGES=1
