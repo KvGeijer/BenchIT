@@ -295,6 +295,9 @@ int bi_entry(void* mdpv, int problemsize, double* results)
 	/* calculating problemsize for this run */
   numberOfMovedDoubles=(unsigned long long)(((double)minlength)*pow(dMemFactor, (problemsize-1)));
   numberOfMovedDoubles-=(numberOfMovedDoubles%(6*omp_get_max_threads()*8));
+  if (numberOfMovedDoubles == 0) {
+    numberOfMovedDoubles=6*omp_get_max_threads()*8;
+  }
    IDL(3,printf ("current number of moved doubles:%lluu\n",
                     numberOfMovedDoubles));
   /* check wether the pointer to store the results in is valid or not */
@@ -410,7 +413,7 @@ void evaluate_environment()
   	printf("BENCHIT_KERNEL_MIN_ACCESS_LENGTH not found! Exiting");
   	exit(127);
   }
-  minlength=atoi(envir)/(sizeof(double))*1000;
+  minlength=(atoi(envir)*1000)/(sizeof(double));
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_MAX_ACCESS_LENGTH",1);
   if (envir==0)
@@ -418,7 +421,7 @@ void evaluate_environment()
   	printf("BENCHIT_KERNEL_MAX_ACCESS_LENGTH not found! Exiting");
   	exit(127);
   }
-  maxlength=atoi(envir)/(sizeof(double))*1000;
+  maxlength=(atoi(envir)*1000)/(sizeof(double));
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_ACCESS_STEPS",1);
   if (envir==0)
