@@ -14,7 +14,7 @@
  BENCHIT_KERNEL_MIN_ACCESS_LENGTH=1
 
  # BENCHIT_KERNEL_MAX_ACCESS_LENGTH is the maximum of accessed memory (in KByte)   
- BENCHIT_KERNEL_MAX_ACCESS_LENGTH=512000
+ BENCHIT_KERNEL_MAX_ACCESS_LENGTH=51200
 
  # BENCHIT_KERNEL_ACCESS_STEPS is the number of measurement points
  BENCHIT_KERNEL_ACCESS_STEPS=50
@@ -27,4 +27,6 @@
  # BENCHIT_KERNEL_USE_HUGE_PAGES defines whether huge pages should be used or
  # not: 1 enabled, 0: disabled
  # Has also to be declared at COMPILE TIME if it should be used!
+ # If Compiled with 1 and run with set to 1, the memory will be allocated with
+ # mmap/madvise instead of malloc
  BENCHIT_KERNEL_USE_HUGE_PAGES=1
