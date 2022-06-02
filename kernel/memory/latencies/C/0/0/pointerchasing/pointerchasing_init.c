@@ -17,6 +17,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <sys/mman.h>
+
 #ifndef BENCHIT_KERNEL_MIN_ACCESS_LENGTH
 #define BENCHIT_KERNEL_MIN_ACCESS_LENGTH (2048)
 #endif
@@ -38,11 +40,12 @@ unsigned int random_number(unsigned long max);
 void make_linked_memory(void *mem, long count);
 void init_global_vars(void);
 
-long minlength, maxlength, accessstride, numjumps;
-double dMemFactor;
-long nMeasurements;
+static long minlength, maxlength, accessstride, numjumps;
+static double dMemFactor;
+static long nMeasurements;
 
-int NUM_COUNTERS;
+static int NUM_COUNTERS;
+static int use_hugepages;
 
 void bi_getinfo(bi_info* infostruct){
   int i;
@@ -99,6 +102,8 @@ void init_global_vars() {
   if(numjumps==0) {
     numjumps=BENCHIT_KERNEL_NUMBER_OF_JUMPS;
   }
+  envir=bi_getenv("BENCHIT_KERNEL_USE_HUGE_PAGES",1);
+  use_hugepages=(envir != 0) ? atoi(envir) : 0;
   IDL(3,printf("done\n"));
 }
 
@@ -108,11 +113,16 @@ void *bi_init(int problemSizemax){
   void *mem;
 
   IDL(3, printf("Enter init ... "));
-  mem=malloc(maxlength);
-  if (mem==NULL){
-    printf("No more core, need %.3f MByte\n", 
-	   (double)maxlength);
-    exit(127);
+  if (use_hugepages) {
+    mem = mmap(NULL, maxlength*2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    madvise(mem, maxlength*2, MADV_HUGEPAGE);
+    if (mem==NULL){
+      printf("No more core, need %.3f MByte\n", 
+	     (double)maxlength);
+      exit(127);
+    }
+  } else {
+    mem = malloc(maxlength*2);
   }
   IDL(3, printf("allocated %.3f MByte\n",
 		(double)maxlength));
@@ -120,6 +130,5 @@ void *bi_init(int problemSizemax){
 }
 
 void bi_cleanup(void *mcb){
-  free(mcb);
   return;
 }
