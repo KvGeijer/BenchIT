@@ -42,20 +42,22 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	float *f1, *f2, *f3;
 	int ii, jj;
 	double dummy = 0.0;
+	int dnum = 0;
 
 	if(results == NULL)
 		return -1;
 	
 	size = (unsigned long)bi_get_list_element(problemSize);
+	unsigned long size2 = size*size;
 	results[0] = size;
-	nOperations = (1.0*size)*(1.0*size)*(2.0*size-1.0);
+	nOperations = (1.0*size)*(2.0*size-1.0);
 	
 
-	((fds*)mcb)->source_vec=mkl_malloc(size*sizeof(float),64);
-	((fds*)mcb)->mat=mkl_malloc(size*size*sizeof(float),64);
-	((fds*)mcb)->target_vec=mkl_malloc(size*sizeof(float),64);
+	((fds*)mcb)->source_vec=(float*)mkl_malloc(size*sizeof(float),64);
+	((fds*)mcb)->mat=(float*)mkl_malloc(size*size*sizeof(float),64);
+	((fds*)mcb)->target_vec=(float*)mkl_malloc(size*sizeof(float),64);
 
-	f1=((fds*)mcb)->source_vec; mat=((fds*)mcb)->feld2; target_vec=((fds*)mcb)->feld3;
+	f1=((fds*)mcb)->source_vec; f2=((fds*)mcb)->mat; f3=((fds*)mcb)->target_vec;
 
 	if((f1==NULL) || (f2==NULL) || (f3==NULL)) {
 		printf("\nmalloc (%ld bytes) failed in bi_entry()\n",(long) (2.0*size*sizeof(float)+size*size*sizeof(float))); 
@@ -63,12 +65,12 @@ int bi_entry(void *mcb, int problemSize,double *results){
 		exit(127);
 		}
 
-	init_data(mcb, size);
+	init_data((fds*) mcb, size);
 
 	/* ************************** */
 	start=bi_gettime();
 	
-#pragma omp target data map(to:f1[0:size2],f2[0:size2]) map(tofrom:f3[0:size2]) device(dnum)
+#pragma omp target data map(to:f1[0:size],f2[0:size2]) map(tofrom:f3[0:size]) device(dnum)
 {
  #pragma omp target variant  dispatch device(dnum) use_device_ptr(f1, f2, f3)
  {
