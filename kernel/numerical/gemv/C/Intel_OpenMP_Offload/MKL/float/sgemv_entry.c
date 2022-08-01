@@ -22,8 +22,8 @@ void init_data(fds *myfds, int size) {
 	for(x = 0; x < size; x++) {
 		index = x * size;
 		max = index + size;
-		myfds->source_vec[index] = 30.0;
-		myfds->target_vec[index] = 0.0;
+		myfds->source_vec[x] = 30.0;
+		myfds->target_vec[x] = 0.0;
 		for(index; index < max; index++) {
 			myfds->mat[index] = 0.01;
 		}
@@ -90,15 +90,15 @@ int bi_entry(void *mcb, int problemSize,double *results){
 
 	if(mcb!=NULL) {
 		if(f1!=NULL) {
-			free(f1);
+			mkl_free(f1);
 			f1=NULL;
 		}
 		if(f2!=NULL) {
-			free(f2);
+			mkl_free(f2);
 			f2=NULL;
 		}
 		if(f3!=NULL) {
-			free(f3);
+			mkl_free(f3);
 			f3=NULL;
 		}
 	}

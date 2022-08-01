@@ -20,8 +20,8 @@ void init_data(fds *myfds, int size) {
 	for(x = 0; x < size; x++) {
 		index = x * size;
 		max = index + size;
-		myfds->source_vec[index] = 30.0;
-		myfds->target_vec[index] = 0.0;
+		myfds->source_vec[x] = 30.0;
+		myfds->target_vec[x] = 0.0;
 		for(index; index < max; index++) {
 			myfds->mat[index] = 0.01;
 		}
@@ -35,7 +35,7 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	double time=0, start, stop;
 	double nOperations=0.0;
 	long lCurrentSize;
-	unsigned long size;
+	unsigned long long size;
 	char N='N';
 	float *f1, *f2, *f3;
 	int ii, jj;
@@ -46,14 +46,14 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	
 	size = (unsigned long)bi_get_list_element(problemSize);
 	results[0] = size;
-	nOperations = (1.0*size)*(1.0*size)*(2.0*size-1.0);
+	nOperations = (1.0*size)*(2.0*size-1.0);
 	
 
 	((fds*)mcb)->source_vec=malloc(size*sizeof(float));
 	((fds*)mcb)->mat=malloc(size*size*sizeof(float));
 	((fds*)mcb)->target_vec=malloc(size*sizeof(float));
 
-	f1=((fds*)mcb)->source_vec; mat=((fds*)mcb)->feld2; target_vec=((fds*)mcb)->feld3;
+	f1=((fds*)mcb)->source_vec; f2=((fds*)mcb)->mat; f3=((fds*)mcb)->target_vec;
 
 	if((f1==NULL) || (f2==NULL) || (f3==NULL)) {
 		printf("\nmalloc (%ld bytes) failed in bi_entry()\n",(long) (2.0*size*sizeof(float)+size*size*sizeof(float))); 
