@@ -33,6 +33,10 @@
 #define BENCHIT_KERNEL_ACCESS_STEPS (100)
 #endif
 
+#ifndef BENCHIT_KERNEL_CACHELINE_SIZE
+#define BENCHIT_KERNEL_DEFAULT_CACHELINE_SIZE (128)
+#endif
+
 #ifndef BENCHIT_KERNEL_NUMBER_OF_JUMPS
 #define BENCHIT_KERNEL_NUMBER_OF_JUMPS (4000000)
 #endif
@@ -48,6 +52,7 @@ long nMeasurements;
 
 static int NUM_COUNTERS;
 static int use_hugepages;
+long cacheline_size;
 
 void bi_getinfo(bi_info* infostruct){
   int i;
@@ -92,6 +97,14 @@ void init_global_vars() {
   if(maxlength==0) {
     maxlength=BENCHIT_KERNEL_MIN_ACCESS_LENGTH;
   }
+  
+  envir=0;
+  envir=bi_getenv("BENCHIT_KERNEL_CACHELINE_SIZE",1);
+  cacheline_size=(envir != 0) ? atoi(envir) : BENCHIT_KERNEL_DEFAULT_CACHELINE_SIZE;
+  if(cacheline_size==0) {
+    cacheline_size=BENCHIT_KERNEL_DEFAULT_CACHELINE_SIZE;
+  }
+  
   envir=0;
   envir=bi_getenv("BENCHIT_KERNEL_ACCESS_STEPS",1);
   nMeasurements = (envir != 0) ? atoi(envir) : BENCHIT_KERNEL_ACCESS_STEPS;

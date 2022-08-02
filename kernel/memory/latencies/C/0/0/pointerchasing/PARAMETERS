@@ -17,12 +17,18 @@
  BENCHIT_KERNEL_MAX_ACCESS_LENGTH=51200
 
  # BENCHIT_KERNEL_ACCESS_STEPS is the number of measurement points
- BENCHIT_KERNEL_ACCESS_STEPS=50
+ BENCHIT_KERNEL_ACCESS_STEPS=500
 
  # BENCHIT_KERNEL_NUMBER_OF_JUMPS is the number of pointer jumps
  # that the kernel will perform per measurement   
  # point (must be a multiple of 100)              
- BENCHIT_KERNEL_NUMBER_OF_JUMPS=4000000
+ BENCHIT_KERNEL_NUMBER_OF_JUMPS=400000
+ 
+ # BENCHIT_KERNEL_CACHELINE_SIZE defines the cache line size in Byte
+ # default 128
+ # it should also handle adjacent line prefetchers, thats why the default
+ # is twice the cacheline size (128 instead of 64)
+ BENCHIT_KERNEL_CACHELINE_SIZE=128
  
  # BENCHIT_KERNEL_USE_HUGE_PAGES defines whether huge pages should be used or
  # not: 1 enabled, 0: disabled

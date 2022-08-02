@@ -47,7 +47,7 @@ void make_linked_memory(void *mem, long length) {
   /* some pointers to generate the list */
   void **ptr, **first;
   /** how many ptr we create within the memory */
-  long num_ptr=length/sizeof(void *);
+  long num_ptr=length/128; //sizeof(void *);
   /** the list for all memory locations that are linked */
   long *ptr_numbers;
   /** for the loops */
@@ -66,6 +66,7 @@ void make_linked_memory(void *mem, long length) {
   /* initialize ptr numbers, the 0 is used as the first
    * number
    */
+
   for(loop_ptrs=1; loop_ptrs<num_ptr; loop_ptrs++)
     ptr_numbers[loop_ptrs-1]=loop_ptrs;
 
@@ -81,9 +82,9 @@ void make_linked_memory(void *mem, long length) {
     act_num=random_number(num_ptr);
     /* create a link from the last ptr 
        to this ptr */
-    *ptr=(void *) (first+ptr_numbers[act_num]);
+    *ptr=(void *) (first+(128/sizeof(void**))*ptr_numbers[act_num]);
     /* move pointer to new memory location */
-    ptr=first+ptr_numbers[act_num];
+    ptr=first+(128/sizeof(void**))*ptr_numbers[act_num];
     /* remove used ptr number from list of
        pointer numbers, just copies the last 
        number to the actual position */
@@ -139,5 +140,3 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 
   return (0);
 }
-
-
