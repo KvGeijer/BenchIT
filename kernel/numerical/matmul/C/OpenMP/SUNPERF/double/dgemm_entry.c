@@ -32,14 +32,14 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	double one=1.0;
 	double time=0, start, stop;
 	double nOperations=0;
-	unsigned long size;
+	unsigned long long size;
 	char N='N';
 	double *f1= ((fds*)mcb)->feld1, *f2=((fds*)mcb)->feld2, *f3=((fds*)mcb)->feld3;
 	
 	if(results == NULL)
 		return -1;
 	
-	size = (unsigned long)bi_get_list_element(problemSize);
+	size = (unsigned long long)bi_get_list_element(problemSize);
 	results[0] = size;
 	nOperations = (1.0*size)*(1.0*size)*(2.0*size-1.0);
 	
@@ -62,5 +62,3 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	}
 	return 0;
 }
-
-

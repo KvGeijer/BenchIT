@@ -117,13 +117,13 @@ void entry_(void *ptr, int *size)
     entry1(f1, f2, f3, size);
 }
 
-double count_(int *version, int *size)
+unsigned long long count_(int *version, int *size)
 {
-  double ulSize = 1.0 * *size;
+  unsigned long long ulSize = *size;
   switch (*version)
   {
     default:
-      return 2.0 * (ulSize) * (ulSize) * (ulSize);
+      return 2ULL * (ulSize) * (ulSize) * (ulSize);
   }
 }
 
@@ -249,7 +249,7 @@ int bi_entry(void* mdpv, int problemSize, double* results)
 
   int v = 1;
   double time = 0;
-  unsigned long count = 0;
+  unsigned long long count = 0;
   double start, stop;
 
   /* calculate real problemSize */
@@ -358,6 +358,3 @@ void bi_cleanup(void* mdpv)
     free(data);
   }
 }
-
-
-

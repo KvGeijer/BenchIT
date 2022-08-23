@@ -36,8 +36,8 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	double one=1.0;
 	double time=0, start, stop;
 	double nOperations=0.0;
-	long lCurrentSize;
-	unsigned long size, optsize, diff;
+	long long long lCurrentSize;
+	unsigned long long size, optsize, diff;
 	char N='N';
 	double *f1, *f2, *f3;
 	int ii, jj, kk, ompnumthreads;
@@ -49,7 +49,7 @@ int bi_entry(void *mcb, int problemSize,double *results){
 	if(results == NULL)
 		return -1;
 	
-	size = (unsigned long)bi_get_list_element(problemSize);
+	size = (unsigned long long)bi_get_list_element(problemSize);
 
 	lCurrentSize = size*size*sizeof(double);
 
@@ -116,5 +116,3 @@ int bi_entry(void *mcb, int problemSize,double *results){
 
 	return 0;
 }
-
-
