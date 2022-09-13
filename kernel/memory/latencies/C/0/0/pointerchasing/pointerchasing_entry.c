@@ -24,6 +24,7 @@
 
 
 extern long numjumps;
+extern long cacheline_size;
 
 void *jump_around(void *mem, long n);
 
@@ -47,7 +48,7 @@ void make_linked_memory(void *mem, long length) {
   /* some pointers to generate the list */
   void **ptr, **first;
   /** how many ptr we create within the memory */
-  long num_ptr=length/128; //sizeof(void *);
+  long num_ptr=length/cacheline_size; //sizeof(void *);
   /** the list for all memory locations that are linked */
   long *ptr_numbers;
   /** for the loops */
@@ -82,9 +83,9 @@ void make_linked_memory(void *mem, long length) {
     act_num=random_number(num_ptr);
     /* create a link from the last ptr 
        to this ptr */
-    *ptr=(void *) (first+(128/sizeof(void**))*ptr_numbers[act_num]);
+    *ptr=(void *) (first+(cacheline_size/sizeof(void**))*ptr_numbers[act_num]);
     /* move pointer to new memory location */
-    ptr=first+(128/sizeof(void**))*ptr_numbers[act_num];
+    ptr=first+(cacheline_size/sizeof(void**))*ptr_numbers[act_num];
     /* remove used ptr number from list of
        pointer numbers, just copies the last 
        number to the actual position */
