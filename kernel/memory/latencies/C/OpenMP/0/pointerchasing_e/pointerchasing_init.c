@@ -46,7 +46,7 @@ unsigned int random_number(unsigned long max);
 void make_linked_memory(void *mem, long count);
 void init_global_vars(void);
 
-long minlength, maxlength, accessstride, numjumps;
+long minlength, maxlength, accessstride, numjumps,cachelength;
 double dMemFactor;
 long nMeasurements;
 
@@ -95,6 +95,13 @@ void init_global_vars() {
   maxlength=(envir != 0) ? 1000*atoi(envir) : BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
   if(maxlength==0) {
     maxlength=BENCHIT_KERNEL_MIN_ACCESS_LENGTH;
+  }
+  
+  envir=0;
+  envir=bi_getenv("BENCHIT_KERNEL_FLUSH_LENGTH",1);
+  cachelength=(envir != 0) ? 1000*atoi(envir) : BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
+  if(cachelength==0) {
+    cachelength=BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
   }
   
   envir=0;

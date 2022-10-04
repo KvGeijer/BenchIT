@@ -29,6 +29,10 @@
 #define BENCHIT_KERNEL_MAX_ACCESS_LENGTH (1024*1024)
 #endif
 
+#ifndef BENCHIT_KERNEL_NR_PINGPONG
+#define BENCHIT_KERNEL_NR_PINGPONG (100)
+#endif
+
 #ifndef BENCHIT_KERNEL_ACCESS_STEPS
 #define BENCHIT_KERNEL_ACCESS_STEPS (100)
 #endif
@@ -46,7 +50,7 @@ unsigned int random_number(unsigned long max);
 void make_linked_memory(void *mem, long count);
 void init_global_vars(void);
 
-long minlength, maxlength, accessstride, numjumps;
+long minlength, maxlength, cachelength, accessstride, numjumps,nr_pingpong;
 double dMemFactor;
 long nMeasurements;
 
@@ -94,7 +98,21 @@ void init_global_vars() {
   envir=bi_getenv("BENCHIT_KERNEL_MAX_ACCESS_LENGTH",1);
   maxlength=(envir != 0) ? 1000*atoi(envir) : BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
   if(maxlength==0) {
-    maxlength=BENCHIT_KERNEL_MIN_ACCESS_LENGTH;
+    maxlength=BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
+  }
+  
+  envir=0;
+  envir=bi_getenv("BENCHIT_KERNEL_FLUSH_LENGTH",1);
+  cachelength=(envir != 0) ? 1000*atoi(envir) : BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
+  if(cachelength==0) {
+    cachelength=BENCHIT_KERNEL_MAX_ACCESS_LENGTH;
+  }
+  
+  envir=0;
+  envir=bi_getenv("BENCHIT_KERNEL_NR_PINGPONG",1);
+  nr_pingpong=(envir != 0) ? atoi(envir) : BENCHIT_KERNEL_NR_PINGPONG;
+  if(nr_pingpong==0) {
+    nr_pingpong=BENCHIT_KERNEL_NR_PINGPONG;
   }
   
   envir=0;

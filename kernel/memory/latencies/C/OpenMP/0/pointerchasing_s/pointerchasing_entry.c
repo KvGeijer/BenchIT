@@ -135,15 +135,15 @@ int ext_res;
 void flush()
 {
   static int* fill=NULL;
-	extern long maxlength;
+	extern long cachelength;
 	if (fill==NULL)
-  { fill=malloc(maxlength);
+  { fill=malloc(cachelength);
     int x=rand();
-     for (long i=0;i<maxlength/sizeof(int);i++)
+     for (long i=0;i<cachelength/sizeof(int);i++)
        fill[i]=x*i;
   }
   unsigned int res=0;
-  for (long i=0;i<maxlength/sizeof(int);i++)
+  for (long i=0;i<cachelength/sizeof(int);i++)
      res =res ^ fill[i];
   ext_res=res;
 }
@@ -166,28 +166,26 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 	results[0]=(double) length;
 
 
-omp_set_num_threads(2);
+omp_set_num_threads(3);
 #pragma omp parallel
-{/*
+{
+#pragma omp barrier
   if (omp_get_thread_num() == 0) {
   	make_linked_memory(mcb, length);
-  }
-#pragma omp barrier
-  jump_around(mcb, length/cacheline_size);
-*/
-  if (omp_get_thread_num() == 0) {
-  flush();
   }
 #pragma omp barrier
   flush();
 #pragma omp barrier
   if (omp_get_thread_num() == 0) {
-  	make_linked_memory(mcb, length);
-  	jump_around(mcb, length/cacheline_size);
+  	  jump_around(mcb, length/cacheline_size);
+  }
+#pragma omp barrier
+  if (omp_get_thread_num() == 1) {
+  	  jump_around(mcb, length/cacheline_size);
   }
 #pragma omp barrier
   _mm_mfence();
-  if (omp_get_thread_num() == 1) {
+  if (omp_get_thread_num() == 2) {
     rdtscll(start);
 	  jump_around(mcb, length/cacheline_size);
     _mm_lfence();

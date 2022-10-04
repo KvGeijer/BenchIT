@@ -135,15 +135,15 @@ int ext_res;
 void flush()
 {
   static int* fill=NULL;
-	extern long maxlength;
+	extern long cachelength;
 	if (fill==NULL)
-  { fill=malloc(maxlength);
+  { fill=malloc(cachelength);
     int x=rand();
-     for (long i=0;i<maxlength/sizeof(int);i++)
+     for (long i=0;i<cachelength/sizeof(int);i++)
        fill[i]=x*i;
   }
   unsigned int res=0;
-  for (long i=0;i<maxlength/sizeof(int);i++)
+  for (long i=0;i<cachelength/sizeof(int);i++)
      res =res ^ fill[i];
   ext_res=res;
 }
@@ -160,41 +160,43 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 	
 	extern double dMemFactor;
 	extern long minlength;
+	extern long nr_pingpong;
 
 	length = (long)(((double)minlength)*pow(dMemFactor, (problemSize-1)));
 
 	results[0]=(double) length;
 
-
 omp_set_num_threads(2);
 #pragma omp parallel
-{/*
-  if (omp_get_thread_num() == 0) {
-  	make_linked_memory(mcb, length);
-  }
-#pragma omp barrier
-  jump_around(mcb, length/cacheline_size);
-*/
-  if (omp_get_thread_num() == 0) {
+{
+  int tn=omp_get_thread_num();
+#pragma omp barrier 
   flush();
-  }
-#pragma omp barrier
-  flush();
-#pragma omp barrier
-  if (omp_get_thread_num() == 0) {
+#pragma omp barrier 
+  if (tn == 0) {
   	make_linked_memory(mcb, length);
   	jump_around(mcb, length/cacheline_size);
   }
 #pragma omp barrier
   _mm_mfence();
-  if (omp_get_thread_num() == 1) {
+  if (tn == 1) {
     rdtscll(start);
+    _mm_lfence();
+	  jump_around(mcb, length/cacheline_size);
+	}
+for (int x=0;x<nr_pingpong*2;x++){
+#pragma omp barrier
+  if (x%2==tn)
+	  jump_around(mcb, length/cacheline_size);
+}	
+#pragma omp barrier
+  if (tn == 0) {
 	  jump_around(mcb, length/cacheline_size);
     _mm_lfence();
     rdtscll(stop);
 	}
 }
-	 results[1]=(double)(stop-start)/((double)length/cacheline_size);
+	 results[1]=(1.0/((double)nr_pingpong*2.0+2.0))*((double)(stop-start)/((double)length/cacheline_size));
    
 
   return (0);
