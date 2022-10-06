@@ -169,9 +169,10 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 omp_set_num_threads(2);
 #pragma omp parallel
 {
+  flush();
 #pragma omp barrier
   if (omp_get_thread_num() == 0) {
-  	make_linked_memory(mcb, length);
+  	  jump_around_w(mcb, length/cacheline_size);
   }
 #pragma omp barrier
   flush();

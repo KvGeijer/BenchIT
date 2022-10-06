@@ -8,11 +8,11 @@
  *******************************************************************/
 /* Kernel: Memory Access Time (C)
  *******************************************************************/
+#include <stdatomic.h>
+
+#define ONE_W { ptr=(volatile void **)atomic_fetch_or_explicit(ptr,ormask,memory_order_seq_cst);}
 
 #define ONE {ptr=(void **) *ptr;}
-#define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
-#define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
-#define THO HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN
 
 void *jump_around(void *mem, long n) {
   void **ptr;
@@ -24,6 +24,19 @@ void *jump_around(void *mem, long n) {
   /* numjump Sprnge im Kreis :-) */
   for(a=0; a<n; a++) {
     ONE
+      }
+  return (void *) ptr;
+}
+void *jump_around_w(volatile void **mem, long n) {
+  volatile void **ptr;
+  long a;
+  unsigned long long ormask=0x0;
+
+  ptr=(volatile void **) mem;
+
+  /* numjump Sprnge im Kreis :-) */
+  for(a=0; a<n; a++) {
+    ONE_W
       }
   return (void *) ptr;
 }

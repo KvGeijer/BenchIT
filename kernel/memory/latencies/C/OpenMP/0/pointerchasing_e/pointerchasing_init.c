@@ -43,7 +43,6 @@
 
 
 unsigned int random_number(unsigned long max);
-void make_linked_memory(void *mem, long count);
 void init_global_vars(void);
 
 long minlength, maxlength, accessstride, numjumps,cachelength;
@@ -144,6 +143,7 @@ void *bi_init(int problemSizemax){
   }
   IDL(3, printf("allocated %.3f MByte\n",
 		(double)maxlength));
+  make_linked_memory(mem, maxlength);
   return (mem);
 }
 

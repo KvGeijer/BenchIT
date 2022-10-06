@@ -170,14 +170,12 @@ omp_set_num_threads(3);
 #pragma omp parallel
 {
 #pragma omp barrier
-  if (omp_get_thread_num() == 0) {
-  	make_linked_memory(mcb, length);
-  }
-#pragma omp barrier
   flush();
 #pragma omp barrier
   if (omp_get_thread_num() == 0) {
-  	  jump_around(mcb, length/cacheline_size);
+    jump_around_w(mcb, length/cacheline_size);
+    flush();
+    jump_around(mcb, length/cacheline_size);
   }
 #pragma omp barrier
   if (omp_get_thread_num() == 1) {

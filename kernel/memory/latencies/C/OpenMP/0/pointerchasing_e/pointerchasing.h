@@ -13,7 +13,7 @@
 #define BENCHIT_MEMORY_TEST_H
 
 void* jump_around( void *mcb, long numjumps);
+void* jump_around_w( void *mcb, long numjumps);
+void make_linked_memory(void *mem, long length);
 
 #endif /* BENCHIT_MEMORY_TEST_H */
-
-
