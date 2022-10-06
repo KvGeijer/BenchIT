@@ -137,6 +137,7 @@ void *bi_init(int problemSizemax){
   }
   IDL(3, printf("allocated %.3f MByte\n",
 		(double)maxlength));
+  make_linked_memory(mem, maxlength);
   return (mem);
 }
 
