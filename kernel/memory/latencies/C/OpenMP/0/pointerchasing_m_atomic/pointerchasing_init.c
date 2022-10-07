@@ -153,8 +153,8 @@ void *bi_init(int problemSizemax){
   {
     mem = malloc(maxlength*2);
   }
-  IDL(3, printf("allocated %.3f MByte\n",
-		(double)maxlength));
+  IDL(3, printf("allocated %.3f Byte\n",
+		(double)maxlength*2));
   return (mem);
 }
 

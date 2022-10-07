@@ -19,10 +19,6 @@
 #include <omp.h>
 #include <x86intrin.h>
 
-#define ONE {ptr=(void **) *ptr;}
-#define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
-#define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
-#define THO HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN
 
 #define rdtsc(X)        asm volatile("rdtsc":"=A" (X))
 #if defined (__i386__)
@@ -169,21 +165,22 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 omp_set_num_threads(3);
 #pragma omp parallel
 {
-#pragma omp barrier
+  int tn = omp_get_thread_num();
   flush();
 #pragma omp barrier
-  if (omp_get_thread_num() == 0) {
+  if (tn == 0) {
+    make_linked_memory(mcb, length);
     jump_around_w(mcb, length/cacheline_size);
     flush();
     jump_around(mcb, length/cacheline_size);
   }
 #pragma omp barrier
-  if (omp_get_thread_num() == 1) {
+  if (tn == 1) {
   	  jump_around(mcb, length/cacheline_size);
   }
 #pragma omp barrier
   _mm_mfence();
-  if (omp_get_thread_num() == 2) {
+  if (tn == 2) {
     rdtscll(start);
 	  jump_around(mcb, length/cacheline_size);
     _mm_lfence();

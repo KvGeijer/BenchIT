@@ -12,9 +12,6 @@
 #include <stdatomic.h>
 
 #define ONE { ptr=(volatile void **)atomic_fetch_or_explicit(ptr,ormask,memory_order_seq_cst);}
-#define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
-#define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
-#define THO HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN
 
 void *jump_around(volatile void **mem, long n) {
   volatile void **ptr;

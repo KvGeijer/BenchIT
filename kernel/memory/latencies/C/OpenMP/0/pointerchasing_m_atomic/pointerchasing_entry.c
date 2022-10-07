@@ -19,11 +19,6 @@
 #include <omp.h>
 #include <x86intrin.h>
 
-#define ONE {ptr=(void **) *ptr;}
-#define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
-#define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
-#define THO HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN
-
 #define rdtsc(X)        asm volatile("rdtsc":"=A" (X))
 #if defined (__i386__)
 	#define rdtscll(val) do { \
@@ -170,7 +165,6 @@ omp_set_num_threads(2);
 #pragma omp parallel
 {
   int tn=omp_get_thread_num();
-#pragma omp barrier 
   flush();
 #pragma omp barrier 
   if (tn == 0) {
