@@ -21,6 +21,11 @@
 #include <sys/mman.h>
 #endif
 
+
+#ifdef BENCHIT_KERNEL_USE_NUMA_NODE
+#include <numa.h>
+#endif
+
 #ifndef BENCHIT_KERNEL_MIN_ACCESS_LENGTH
 #define BENCHIT_KERNEL_MIN_ACCESS_LENGTH (2048)
 #endif
@@ -50,6 +55,9 @@ double dMemFactor;
 long nMeasurements;
 
 static int use_hugepages;
+#ifdef BENCHIT_KERNEL_USE_NUMA_NODE
+static int numa_node=-1;
+#endif
 long cacheline_size;
 
 void bi_getinfo(bi_info* infostruct){
@@ -118,11 +126,37 @@ void init_global_vars() {
   
   envir=bi_getenv("BENCHIT_KERNEL_USE_HUGE_PAGES",1);
   use_hugepages=(envir != 0) ? atoi(envir) : 0;
+  
+#ifdef BENCHIT_KERNEL_USE_NUMA_NODE
+  envir=0;
+  envir=bi_getenv("BENCHIT_KERNEL_USE_NUMA_NODE",1);
+  numa_node = (envir != 0) ? atoi(envir) : -1;
+#endif
+  
   IDL(3,printf("done\n"));
 }
 
 void *bi_init(int problemSizemax){
   void *mem;
+#ifdef BENCHIT_KERNEL_USE_NUMA_NODE
+  struct bitmask *nodemask, *oldmask;
+  if (numa_node > -1) {
+    int avail=numa_available();
+    if (avail) {
+      nodemask=numa_allocate_nodemask();
+      oldmask=numa_allocate_nodemask();
+      struct bitmask* tmp;
+      tmp=numa_get_membind();
+      copy_bitmask_to_bitmask(tmp,oldmask);
+      numa_bitmask_clearall(nodemask);
+      numa_bitmask_setbit(nodemask,numa_node);
+      numa_set_membind(nodemask);
+    } else {
+      printf("NUMA is not available on your system.\n");
+      numa_node=-1;
+    }
+  }
+#endif
 
   IDL(3, printf("Enter init ... "));
 #if BENCHIT_KERNEL_USE_HUGE_PAGES == 1
@@ -137,10 +171,17 @@ void *bi_init(int problemSizemax){
   } else
 #endif  
   {
-    mem = malloc(maxlength*2);
+    mem = malloc(maxlength);
   }
   IDL(3, printf("allocated %.3f Byte\n",
 		(double)maxlength*2));
+		
+#ifdef BENCHIT_KERNEL_USE_NUMA_NODE
+  if (numa_node > -1) {
+    numa_set_membind(oldmask);
+    numa_free_nodemask(nodemask);
+  }
+#endif
   return (mem);
 }
 
