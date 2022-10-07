@@ -35,6 +35,12 @@
  # If Compiled with 1 and run with set to 1, the memory will be allocated with
  # mmap/madvise instead of malloc
  BENCHIT_KERNEL_USE_HUGE_PAGES=1
+ 
+ # BENCHIT_KERNEL_USE_NUMA_NODE defines on which NUMA node accessed memory
+ # should be allocated (needs libnuma) if libnuma-dev package.
+ # If it is not available, do not use the env. variable.
+ 
+ BENCHIT_KERNEL_USE_NUMA_NODE=0
 
 GOMP_CPU_AFFINITY=2,4,0
 OMP_WAIT_POLICY="ACTIVE"

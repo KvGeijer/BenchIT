@@ -160,27 +160,33 @@ void *bi_init(int problemSizemax){
   IDL(3, printf("Enter init ... "));
 #if BENCHIT_KERNEL_USE_HUGE_PAGES == 1
   if (use_hugepages) {
-    mem = mmap(NULL, maxlength*2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    madvise(mem, maxlength*2, MADV_HUGEPAGE);
-    if (mem==NULL){
-      printf("No more core, need %.3f MByte\n", 
-	     (double)maxlength);
-      exit(127);
+    mem = mmap(NULL, 2*maxlength, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS  | MAP_HUGETLB, -1, 0);
+    if (mem==MAP_FAILED){
+      printf("No hugepages allocated in /sys/kernel/mm/hugepages, falling back to advise the kernel to use huge pages\n");
+      mem = aligned_alloc(2*1024*1024, 2*maxlength);
+      if (mem==MAP_FAILED){
+        printf("No more core, need %.3f MByte\n", 
+               (double)2*maxlength);
+        exit(127);
+      }
+      madvise(mem, 2*maxlength, MADV_HUGEPAGE);
     }
   } else
 #endif  
   {
-    mem = malloc(maxlength);
+    mem = malloc(maxlength*2);
   }
   IDL(3, printf("allocated %.3f Byte\n",
-		(double)maxlength*2));
-		
+                (double)maxlength*2));
+
 #ifdef BENCHIT_KERNEL_USE_NUMA_NODE
   if (numa_node > -1) {
+    memset(mem,0,maxlength*2);
     numa_set_membind(oldmask);
     numa_free_nodemask(nodemask);
   }
 #endif
+
   return (mem);
 }
 
