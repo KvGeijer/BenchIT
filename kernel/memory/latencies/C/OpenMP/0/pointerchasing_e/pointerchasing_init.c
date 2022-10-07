@@ -121,6 +121,29 @@ void init_global_vars() {
   IDL(3,printf("done\n"));
 }
 
+void *bi_init(int problemSizemax){
+  void *mem;
+
+  IDL(3, printf("Enter init ... "));
+#if BENCHIT_KERNEL_USE_HUGE_PAGES == 1
+  if (use_hugepages) {
+    mem = mmap(NULL, maxlength*2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    madvise(mem, maxlength*2, MADV_HUGEPAGE);
+    if (mem==NULL){
+      printf("No more core, need %.3f MByte\n", 
+	     (double)maxlength);
+      exit(127);
+    }
+  } else
+#endif  
+  {
+    mem = malloc(maxlength*2);
+  }
+  IDL(3, printf("allocated %.3f Byte\n",
+		(double)maxlength*2));
+  return (mem);
+}
+
 
 void bi_cleanup(void *mcb){
   return;
