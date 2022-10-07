@@ -141,7 +141,7 @@ void *bi_init(int problemSizemax){
 #ifdef BENCHIT_KERNEL_USE_NUMA_NODE
   struct bitmask *nodemask, *oldmask;
   if (numa_node > -1) {
-    if (numa_available() == -1) {
+    if (numa_available() != -1) {
       nodemask=numa_allocate_nodemask();
       oldmask=numa_allocate_nodemask();
       struct bitmask* tmp;
