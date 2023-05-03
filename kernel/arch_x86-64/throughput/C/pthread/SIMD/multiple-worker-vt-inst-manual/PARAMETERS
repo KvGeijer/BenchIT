@@ -17,6 +17,7 @@ KERNEL_CC="gcc"
 BENCHIT_CC="gcc"
 
 #BENCHIT_CC_C_FLAGS="${BENCHIT_CC_C_FLAGS} -g"
+BENCHIT_CC_C_FLAGS="${BENCHIT_CC_C_FLAGS} -mavx512f"
 
 # disable compiler optimization. Optimisations would destroy the measurement, as some obviously
 # useless operations when touching memory would be removed by the compiler

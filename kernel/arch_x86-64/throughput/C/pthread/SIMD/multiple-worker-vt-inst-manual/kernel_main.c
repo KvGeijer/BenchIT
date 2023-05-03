@@ -620,7 +620,8 @@ void* bi_init( int problemsizemax )
    case 68: //avx_scale_pd
    case 69: //avx_fma_pd
    case 71: //avx_fma4_pd
-	
+   case 85: //avx_add_fma_pd
+
   /* AVX double prec. not mul_add */
    /* avoid FP overflows:
       create x, -1/x, x, -1/x, -x, 1/x, -x, 1/x pattern to guarantee stable register values for add, mul, and mul_plus_add (mul with subsequent add)
@@ -746,6 +747,9 @@ void* bi_init( int problemsizemax )
   }
   break;
 
+   case 86: //avx512_add_pd
+   case 87: //avx512_mul_pd
+   case 88: //avx512_fma_pd
   /* MIC double prec. */
   /* avoid FP overflows:
      create x, -1/x, x, -1/x, -x, 1/x, -x, 1/x pattern to guarantee stable register values for add, mul, and mul_plus_add (mul with subsequent add)
@@ -1375,6 +1379,18 @@ void evaluate_environment(bi_info * info)
      else if (!strcmp(p,"avx_eq_pi8")) {
        ALIGNMENT=256;OFFSET=0;FUNCTION=84;
      }
+    else if (!strcmp(p,"avx_add_fma_pd")) {
+       ALIGNMENT=256;OFFSET=0;FUNCTION=85;
+     }
+    else if (!strcmp(p,"avx512_add_pd")) {
+       ALIGNMENT=512;OFFSET=0;FUNCTION=86;
+     }
+    else if (!strcmp(p,"avx512_mul_pd")) {
+       ALIGNMENT=512;OFFSET=0;FUNCTION=87;
+     }
+    else if (!strcmp(p,"avx512_fma_pd")) {
+       ALIGNMENT=512;OFFSET=0;FUNCTION=88;
+     }
      else {errors++;sprintf(error_msg,"invalid setting for BENCHIT_KERNEL_INSTRUCTION");}
    }
    p = bi_getenv( "BENCHIT_KERNEL_BURST_LENGTH", 0 );
@@ -1527,7 +1543,7 @@ void evaluate_environment(bi_info * info)
    }
    #endif
 
-   if ((BURST_LENGTH>4)&&(BURST_LENGTH!=8)&&(BURST_LENGTH!=16))
+   if ((BURST_LENGTH>4)&&(BURST_LENGTH!=8)&&(BURST_LENGTH!=16)&&(BURST_LENGTH!=32))
      {errors++;sprintf(error_msg,"BURST LENGTH %i not supported",BURST_LENGTH);}
 
    if ( errors > 0 ) {
@@ -1637,6 +1653,7 @@ void evaluate_environment(bi_info * info)
      case 68: //avx_scale_pd
      case 71: //avx_fma4_pd
      case 72: //avx_fma4_ps
+     case 85: //avx_add_fma_pd
      if ((cpuinfo->features&AVX)!=AVX) {
          fprintf( stderr, "Error: AVX not supported!\n" );
          exit( 1 );
@@ -1664,6 +1681,7 @@ void evaluate_environment(bi_info * info)
    switch (FUNCTION){
      case 69: //avx_fma_pd
      case 70: //avx_fma_ps
+     case 85: //avx_add_fma_pd
      if ((cpuinfo->features&FMA)!=FMA) {
          fprintf( stderr, "Error: FMA not supported!\n" );
          exit( 1 );
