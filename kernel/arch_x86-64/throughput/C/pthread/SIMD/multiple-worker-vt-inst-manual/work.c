@@ -116157,7 +116157,10 @@ void *thread(void *threaddata)
 
   if(mydata->buffersize)
   {
-    if (global_data->hugepages==HUGEPAGES_OFF) mydata->buffer = (void *) _mm_malloc( mydata->buffersize,mydata->alignment);
+    if (global_data->hugepages==HUGEPAGES_OFF) {
+        mydata->buffer = mmap(NULL, mydata->buffersize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        madvise(mydata->buffer, mydata->buffersize, MADV_HUGEPAGE);
+    }
     if (global_data->hugepages==HUGEPAGES_ON)
     {
       char *dir;
@@ -116657,10 +116660,8 @@ void *thread(void *threaddata)
              VT_USER_END("IDLE");
              #endif
            }
-         if (global_data->hugepages==HUGEPAGES_ON)
-         {
-           if(mydata->buffer!=NULL) munmap((void*)mydata->buffer,mydata->buffersize);
-         }
+         if(mydata->buffer!=NULL) munmap((void*)mydata->buffer,mydata->buffersize);
+
          pthread_exit(NULL);
     }
   }

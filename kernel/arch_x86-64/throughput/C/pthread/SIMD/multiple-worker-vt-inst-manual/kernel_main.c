@@ -248,7 +248,9 @@ void* bi_init( int problemsizemax )
    //printf("BUFFERSIZE: %llu\n",BUFFERSIZE);
 
    /* if hugepages are enabled increase buffersize to the smallest multiple of 2 MIB greater than buffersize */
+   /* since we assume transparent hugepages, we define the same buffersize */
    if (HUGEPAGES==HUGEPAGES_ON) BUFFERSIZE=(BUFFERSIZE+(2*1024*1024))&0xffe00000ULL;
+   if (HUGEPAGES==HUGEPAGES_OFF) BUFFERSIZE=(BUFFERSIZE+(2*1024*1024))&0xffe00000ULL;
 
    mdp->cpuinfo=cpuinfo;
    mdp->settings=0;
