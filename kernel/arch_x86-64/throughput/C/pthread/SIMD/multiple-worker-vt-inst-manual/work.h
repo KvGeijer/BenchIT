@@ -29,13 +29,13 @@
                 "cpuid;" \
                 "pop %%rdx; pop %%rcx; pop %%rbx; pop %%rax;"
 #elif defined(FORCE_MFENCE)
-#define SERIALIZE "mfence;"
+#define SERIALIZE "mfence;lfence;"
 #else
 #define SERIALIZE ""
 #endif
 
 /* read timestamp counter */
-#define TIMESTAMP "rdtsc;shl $32,%%rdx;add %%rdx,%%rax;"
+#define TIMESTAMP "rdtsc;lfence;shl $32,%%rdx;add %%rdx,%%rax;"
 
 
 /** 2 phase synchronization
