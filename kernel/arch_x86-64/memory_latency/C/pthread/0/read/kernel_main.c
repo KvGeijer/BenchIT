@@ -246,6 +246,7 @@ void* bi_init( int problemsizemax )
 
    /* if hugepages are enabled increase buffersize to the smallest multiple of 2 MIB greater than buffersize */
    if (HUGEPAGES==HUGEPAGES_ON) BUFFERSIZE=(BUFFERSIZE+(2*1024*1024))&0xffe00000ULL;
+   if (HUGEPAGES==HUGEPAGES_OFF) BUFFERSIZE=(BUFFERSIZE+(2*1024*1024))&0xffe00000ULL;
 
    mdp->cpuinfo=cpuinfo;
    mdp->settings=0;
@@ -977,7 +978,7 @@ void evaluate_environment(bi_info * info)
      else if (!strcmp(p,"1")) HUGEPAGES=HUGEPAGES_ON;
      else {errors++;sprintf(error_msg,"invalid setting for BENCHIT_KERNEL_HUGEPAGES");}
    }
-   if (HUGEPAGES==HUGEPAGES_OFF) {fprintf( stderr, "Warning: BENCHIT_KERNEL_HUGEPAGES=0, latency measurement without hugepages is not recommended.\n" ); fflush(stderr);}
+   if (HUGEPAGES==HUGEPAGES_OFF) {fprintf( stderr, "Warning: BENCHIT_KERNEL_HUGEPAGES=0. Attempting to use transparent hugepages. Latency measurement without hugepages is not recommended.\n" ); fflush(stderr);}
    
    p = bi_getenv( "BENCHIT_KERNEL_OFFSET", 0 );
    if ( p == 0 ) {errors++;sprintf(error_msg,"BENCHIT_KERNEL_OFFSET not set");}
