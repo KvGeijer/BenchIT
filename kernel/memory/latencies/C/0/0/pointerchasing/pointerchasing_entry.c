@@ -17,6 +17,11 @@
 #include <stdio.h>
 #include <math.h>
 
+// For the thread pinning
+#include <sched.h>
+#include <pthread.h>
+
+
 #define ONE {ptr=(void **) *ptr;}
 #define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
 #define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
@@ -39,7 +44,7 @@ unsigned int random_number(unsigned long max)
 }
 
 
-/** creates a memory are that is randomly linked 
+/** creates a memory are that is randomly linked
  *  @param mem     the memory area to be used
  *  @param length  the number of bytes that should be used
  */
@@ -74,20 +79,20 @@ void make_linked_memory(void *mem, long length) {
   /* init first ptr with first memory location */
   ptr=(void **)mem;
   first=ptr;
-   
+
   num_ptr--;
 
   while(num_ptr>1) {
     /* get a random position within the
        remaining list */
     act_num=random_number(num_ptr);
-    /* create a link from the last ptr 
+    /* create a link from the last ptr
        to this ptr */
     *ptr=(void *) (first+(cacheline_size/sizeof(void**))*ptr_numbers[act_num]);
     /* move pointer to new memory location */
     ptr=first+(cacheline_size/sizeof(void**))*ptr_numbers[act_num];
     /* remove used ptr number from list of
-       pointer numbers, just copies the last 
+       pointer numbers, just copies the last
        number to the actual position */
     ptr_numbers[act_num]=ptr_numbers[num_ptr-1];
     num_ptr--;
@@ -111,10 +116,22 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 	long length;
 	long long c[4];
 	void *ptr;
-	
+
 	extern double dMemFactor;
 	extern long minlength;
 
+  // Pin this thread to cpu 1
+  int cpu_use = 1;
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  CPU_SET(cpu_use, &mask);
+  pthread_t thread = pthread_self();
+  if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &mask) != 0)
+  {
+          fprintf(stderr, "Error setting thread affinity\n");
+  }
+
+  
 	length = (long)(((double)minlength)*pow(dMemFactor, (problemSize-1)));
 
 	results[0]=(double) length;
@@ -122,22 +139,42 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 
 	IDL(2, printf("Making structure\n"));
 	make_linked_memory(mcb, length);
-	IDL(2, printf("Enter measurement\n"));
-	
-	ptr = jump_around(mcb, numjumps); 	
+  IDL(2, printf("Enter measurement\n"));
+
+  // Here we could have another thread call jump_around. Then that thread would read it into its cache and we could see core-to-core transfers.
+  // To also specify the cache lines, we could have the other thread also write to the memory or similar? (How would this work? Can we just write the same value twice?).
+  // We should probably replce the call below with the new thread!
+
+  // Following the strategy from https://ieeexplore.ieee.org/document/5260544:
+  //     1) thread 0: warm-up TLB
+  //     2) if (N>0): sync of thread 0 and N
+  //     3) thread N: access data (-> E/M/S)
+  //     4) if (N>0): sync of thread 0 and N
+  //     5) all threads: flush caches (optional)
+  //     6) thread 0: measure latency
+  //
+  // So add steps 2 - 4 by spawning another thread to manipulate the data
+  // according to the cache mode wanted (start with just modified or exclusive).
+
+
+  
+	// ptr = jump_around(mcb, numjumps);
+
+  transfer_linked_memory
+  
 	start=bi_gettime();
-	if ((long)ptr == 0)
-		printf("#");
-	
- 	
+	// if ((long)ptr == 0)
+		// printf("#");
+
+
 	jump_around(mcb, numjumps);
- 	
+
 	stop=bi_gettime();
-	
+
 	IDL(2, printf("Done\n"));
-		
+
 	 results[1]=(double)(stop-start)/((double)numjumps);
-   
+
 
   return (0);
 }

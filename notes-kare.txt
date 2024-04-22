@@ -1,0 +1,4 @@
+To get my guerilla-style thread pinning to work, you have to add the
+flag -D_GNU_SOURCE to the compilations, which can be done in
+LOCALDEFS/<name> by adding it to the, by default, empty BENCHIT_CC_C_FLAGS.
+
