@@ -107,6 +107,59 @@ void make_linked_memory(void *mem, long length) {
 }
 
 
+// Pin the unbound thread to a specific hardware thread
+void pin_thread(int cpu_use)
+{
+  // WARNING: Requires _GNU_SOURCE to have been defined during compilation with flag -D_GNU_SOURCE
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  CPU_SET(cpu_use, &mask);
+  pthread_t thread = pthread_self();
+  if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &mask) != 0)
+  {
+          fprintf(stderr, "Error setting thread affinity\n");
+  }
+}
+
+typedef struct {
+  void* mcb;
+  long njumps;
+} targs_t;
+
+void modify_linked_memory(void* vargs)
+{
+  targs_t* args = vargs;
+  long njumps = args->njumps;
+  void** start = args->mcb;
+  void** current = start;
+
+  pin_thread(11);
+
+  for (int jump = 0; jump < njumps; jump++) {
+    // Take modified ownership of current, should not be optimized away
+    void** volatile at = current;
+    *current = *at;
+    
+    // Follow the pointer to the next one
+    current = (void **) *current;
+
+
+    // Repeat until we have wrapped around the memory, or jumped as many times as the test will
+    if (current == start) break;
+  } 
+}
+
+
+// Spawn another thread to take the memory, then wait for it to finish
+void transfer_linked_memory(void* mcb, long njumps)
+{
+  pthread_t tid;
+  targs_t args = {.mcb = mcb, .njumps = njumps};
+  pthread_create(&tid, NULL, modify_linked_memory, &args);
+  pthread_join(tid, NULL);
+}
+
+
 int bi_entry(void *mcb,int problemSize,double *results) {
 
 	static double timeroh=0, calloh=0;
@@ -120,22 +173,12 @@ int bi_entry(void *mcb,int problemSize,double *results) {
 	extern double dMemFactor;
 	extern long minlength;
 
-  // Pin this thread to cpu 1
-  int cpu_use = 1;
-  cpu_set_t mask;
-  CPU_ZERO(&mask);
-  CPU_SET(cpu_use, &mask);
-  pthread_t thread = pthread_self();
-  if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &mask) != 0)
-  {
-          fprintf(stderr, "Error setting thread affinity\n");
-  }
-
-  
 	length = (long)(((double)minlength)*pow(dMemFactor, (problemSize-1)));
 
 	results[0]=(double) length;
 
+  // Use thread 1 as default, as 0 is often used a bit by OS
+  pin_thread(1);
 
 	IDL(2, printf("Making structure\n"));
 	make_linked_memory(mcb, length);
@@ -160,7 +203,7 @@ int bi_entry(void *mcb,int problemSize,double *results) {
   
 	// ptr = jump_around(mcb, numjumps);
 
-  transfer_linked_memory
+  transfer_linked_memory(mcb, numjumps);
   
 	start=bi_gettime();
 	// if ((long)ptr == 0)
