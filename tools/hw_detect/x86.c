@@ -2147,7 +2147,9 @@ int num_threads_per_package()
 
     a=1;
     cpuid(&a,&b,&c,&d);
-    num=((b>>16)&0xff);
+    // According to AMD Architecture Programmer's Manual Volume 1 (Publication No. 40332 Revision. 4.08) E.5, this value is 0-indexed
+    // and we should add a 1 to it to get the number of logical cores (however, this is deprecated due to only including 8 bits). 
+    num=((b>>16)&0xff) + 1; 
 
     /* check if SMT is supported but deactivated (cpuid reports maximum logical processor count, even if some are deactivated in BIOS) */
     /* this simple test will do the trick for single socket systems (e.g. Pentium 4/D) */
