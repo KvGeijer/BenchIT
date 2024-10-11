@@ -13,6 +13,7 @@ typedef struct {
 	const int model;
 	const char * codename;
 	const int node;
+	const char * package;
 } info_t;
 
 extern const info_t cpu_data[];
