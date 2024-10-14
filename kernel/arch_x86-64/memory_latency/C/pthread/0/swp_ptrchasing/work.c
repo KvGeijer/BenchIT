@@ -676,30 +676,12 @@ static int asm_work_cas(unsigned long long addr, unsigned long long passes, vola
 
     unsigned long a, b;
 
-// cmpxchgq <source r64>, <dest r/m64>
-// if rax == dest:
-//   dest = src
-// else:
-//   rax = dest
+// ONE_CHASE has to achieve the operation `rbx = *rbx`
 
-/*** Version 1 ***/
-// cmpxchg does the `rbx = *rbx` setting, but only after a movq instruction has
-// already retrieved the value of *rbx from memory.
-// `lock` isn't (and can't be) used here, because it's a register-register xchg
-// #define ONE_CHASE                 \
-//     "movq %%rbx, %%rax;"          \
-//     "movq (%%rbx), %%r11;"        \
-//     "cmpxchgq %%r11, %%rbx;"
-    
-/*** Version 2 ***/
-// Use cmpxchg in it's "else" condition, to load *rbx into rax, and then that
-// value is moved into rbx. The source operand in cmpxchg here is unused.
-// The first movq here sets up rax to definitely not equal *rbx, so that the
-// condition fails in cmpxchg.
 #define ONE_CHASE \
-    "movq %%rbx, %%rax;" \
-    "lock cmpxchgq %%rax, (%%rbx);" \
-    "movq %%rax, %%rbx;"
+    "lock xchgq (%%rbx), %%r11;" \
+    "movq %%r11, (%%rbx);" \
+    "movq %%r11, %%rbx;"
 
 // #define ONE_CHASE "mov (%%rbx), %%rbx;"NOP(NOPCOUNT)
 
