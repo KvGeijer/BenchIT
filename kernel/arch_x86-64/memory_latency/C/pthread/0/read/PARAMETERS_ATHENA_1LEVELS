@@ -39,7 +39,7 @@ BENCHIT_KERNEL_STEPS=70
 # format: "x,y,z"or "x-y" or "x-y/step" or any combination
 # useful setting: CPU0, another CPU sharing the socket (or die in case of MCMs) with CPU0, one CPU in every other socket (or die)
 #                 using more CPUs usually results in redundant curves
-# Setting: Locally, hyperthread, same CCX, quadrant 0-3 on local socket, other socket
+# Setting: Locally, same CCX, quadrant 0-3 on local socket, other socket
 BENCHIT_KERNEL_CPU_LIST="0,1,16,32,64,96,128"
 
 # defines how often each memorysize is measured internally (default 6)
