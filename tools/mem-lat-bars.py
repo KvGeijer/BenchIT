@@ -72,7 +72,6 @@ def process_benchit_output(config: Config):
 
     # Parse the output to find the output file path
     output = run_process.stdout
-    print(output)
     match = re.search(
         r'BenchIT: Wrote output to "(.*?)" in directory\s+"(.*?)"', output)
     if not match:
