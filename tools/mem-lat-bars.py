@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import subprocess
 import re
 import os
@@ -161,11 +162,44 @@ def main():
     # Parse command-line arguments
     config = parse_arguments()
 
-    # Collect or generate latency data based on configurations
-    df = process_benchit_output(config)
+    try:
+        # Disable prefetching for the experiments
+        disable_prefetch()
+
+        # Collect or generate latency data based on configurations
+        df = process_benchit_output(config)
+    finally:
+        # Don't forget to re-enable the prefetching
+        enable_prefetch()
 
     # Plot the latency data
     plot_latency_data(df, config)
+
+
+def disable_prefetch():
+    # Disable pre-fetching using msr.sh from https://github.com/KvGeijer/msr-utils/tree/main
+    msr_path = shutil.which("msr.sh")
+
+    if msr_path:
+        try:
+            subprocess.run(
+                [msr_path, "--prefetch", "disable"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"WARNING: Could not disable prefetching! {e}")
+    else:
+        print("WARNING: Could not disable pre-fetching, so results for L1 are probably off")
+
+
+def enable_prefetch():
+    # Enable pre-fetching using msr.sh from https://github.com/KvGeijer/msr-utils/tree/main
+    msr_path = shutil.which("msr.sh")
+
+    if msr_path:
+        try:
+            subprocess.run(
+                [msr_path, "--prefetch", "enable"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"WARNING: Could not re-enable prefetching! {e}")
 
 
 if __name__ == "__main__":
