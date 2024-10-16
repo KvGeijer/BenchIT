@@ -127,7 +127,7 @@ def local_parameters(func):
         finally:
             # Restore the original used parameters file
             if os.path.exists(backup_path):
-                shutil.move(backup_path, PARAMETERS_PATH)
+                # shutil.move(backup_path, PARAMETERS_PATH)
                 pass
             else:
                 print(
@@ -143,8 +143,9 @@ def process_benchit_output(config: Config):
         content = file.read()
 
     with open(PARAMETERS_PATH, 'w') as file:
-        new_content = re.sub(r'BENCINT_KERNAL_USE_MODE="."',
-                             f'BENCINT_KERNAL_USE_MODE="{config.cache_state}"', content)
+        new_content = re.sub(r'BENCHIT_KERNEL_USE_MODE="."',
+                             f'BENCHIT_KERNEL_USE_MODE="{config.cache_state}"', content)
+        print(content == new_content)
         file.write(new_content)
 
     # Run the compile command
