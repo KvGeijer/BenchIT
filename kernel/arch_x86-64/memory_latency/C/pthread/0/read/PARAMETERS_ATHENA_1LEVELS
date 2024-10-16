@@ -40,11 +40,11 @@ BENCHIT_KERNEL_STEPS=70
 # useful setting: CPU0, another CPU sharing the socket (or die in case of MCMs) with CPU0, one CPU in every other socket (or die)
 #                 using more CPUs usually results in redundant curves
 # Setting: Locally, same CCX, quadrant 0-3 on local socket, other socket
-BENCHIT_KERNEL_CPU_LIST="0,1,16,32,64,96,128"
+BENCHIT_KERNEL_CPU_LIST="0,256,1,16,32,64,96,128"
 
 # defines how often each memorysize is measured internally (default 6)
 # lower values recommended for USE_MODE S/F as multiple iterations train the prefetchers (increase BENCHIT_RUN_ACCURACY instead)
-BENCHIT_KERNEL_RUNS=10
+BENCHIT_KERNEL_RUNS=20
 # clear caches between runs (0|1 default 1)
 BENCHIT_KERNEL_CLFLUSH_BETWEEN_RUNS=1
 
@@ -82,7 +82,7 @@ BENCHIT_KERNEL_FLUSH_PAGE_TABLES=1
 BENCHIT_KERNEL_ALLOC="L"
 # Memory affinity, ignored if BENCHIT_KERNEL_ALLOC is not set to "B"
 # needs to be at least as long as BENCHIT_KERNEL_CPU_LIST
-BENCHIT_KERNEL_MEM_BIND="0,1,16,32,64,96,128"
+BENCHIT_KERNEL_MEM_BIND="0,256,1,16,32,64,96,128"
 
 
 # use hugepages (0/1) (default 0, 1 recommended if hugetlbfs is available)

@@ -153,7 +153,7 @@ void bi_getinfo( bi_info * infostruct )
    infostruct->kernel_execs_pthreads = 1;
 
    /* cycles and ns + selected counters*/
-   n_of_works = 2;
+   n_of_works = 1;
    #ifdef USE_PAPI
     n_of_works+=papi_num_counters;
    #endif
@@ -447,7 +447,7 @@ void* bi_init( int problemsizemax )
     numa_bitmask = numa_bitmask_clearall(numa_bitmask);
     numa_bitmask = numa_bitmask_setbit(numa_bitmask, numa_node);
     numa_set_membind(numa_bitmask);
-    numa_bitmask_free(numa_bitmask);
+    // numa_bitmask_free(numa_bitmask);
 
     mdp->threaddata[t].cpuinfo=(cpu_info_t*)_mm_malloc( sizeof( cpu_info_t ),ALIGNMENT);
     if ( mdp->cpuinfo == 0 ){
@@ -500,7 +500,7 @@ void* bi_init( int problemsizemax )
   numa_bitmask = numa_bitmask_clearall(numa_bitmask);
   numa_bitmask = numa_bitmask_setbit(numa_bitmask, numa_node);
   numa_set_membind(numa_bitmask);
-  numa_bitmask_free(numa_bitmask);
+  // numa_bitmask_free(numa_bitmask);
  
   /* allocate memory for first thread */
   //printf("first thread, malloc: %llu \n",BUFFERSIZE);

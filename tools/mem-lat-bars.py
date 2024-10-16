@@ -3,24 +3,32 @@ import shutil
 import subprocess
 import re
 import os
+import datetime
 from dataclasses import dataclass
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from io import StringIO  # Import StringIO from io
+from io import StringIO
+from functools import wraps
+from pathlib import Path
+import random
+import string
+import shutil
 
 
 KERNEL_PATH = "./kernel/arch_x86-64/memory_latency/C/pthread/0/read"
 BINARY_PATH = "./bin/arch_x86-64.memory_latency.C.pthread.0.read.0"
-BASE_PARAMETERS_PATH = "kernel/arch_x86-64/memory_latency/C/pthread/0/read/PARAMETERS_ATHENA_1LEVELS"
+WANTED_PARAMETERS_PATH = "kernel/arch_x86-64/memory_latency/C/pthread/0/read/PARAMETERS_ATHENA_1LEVELS"
+PARAMETERS_PATH = "kernel/arch_x86-64/memory_latency/C/pthread/0/read/PARAMETERS"
 COMPILE_CMD = "./COMPILE.SH"
 RUN_CMD = "./RUN.SH"
 
 
 @dataclass
 class Config:
-    test_name: str
-    cache_state: str = "E"
+    save_name: str | None
+    cache_state: str
+    dynamic_threads: bool
 
 
 def parse_arguments() -> Config:
@@ -29,8 +37,8 @@ def parse_arguments() -> Config:
     """
     parser = argparse.ArgumentParser(
         description="Latency Measurements for reads on different memory levels and cache states")
-    parser.add_argument('--name', type=str,
-                        help="The name to save the script results under. Is saved in the kernel result dir")
+    parser.add_argument('--save-name', type=str,
+                        help="A name to save the script results under. Is saved in the kernel output/mem-lat-bars dir")
     parser.add_argument(
         '--cache-state',
         type=str,
@@ -38,21 +46,88 @@ def parse_arguments() -> Config:
         default='E',
         help="Cache state: 'M' (Modified), 'E' (Exclusive), 'I' (Invalid), 'R' (Read-only)"
     )
+    parser.add_argument('--dynamic-thread-names', action='store_true', 
+                        help="Uses the core ids instead of hard-coded names based on distance.")
 
     args = parser.parse_args()
+    if args.save_name:
+        save_name = Path('output/mem-lat-bars') / args.save_name
+        if save_name.exists():
+            now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            save_name = save_name.with_name(f"{save_name.name}_{now}")
+    else:
+        save_name = None
 
     # Convert to Config dataclass
     config = Config(
         cache_state=args.cache_state,
-        test_name=args.name,
+        save_name=save_name,
+        dynamic_threads=args.dynamic_thread_names,
     )
     return config
 
 
+def parse_cpu_list():
+    """
+    Parses the cores/cpus used in the experiment, by reading the parameter file 
+    """
+    with open(PARAMETERS_PATH, 'r') as file:
+        for line in file:
+            # Find the line starting with BENCHIT_KERNEL_CPU_LIST
+            if line.startswith("BENCHIT_KERNEL_CPU_LIST"):
+                # Use regex to extract the numbers inside the quotes
+                match = re.search(r'"([\d, ]+)"', line)
+                if match:
+                    # Extract the matched string and remove spaces
+                    cpu_list_str = match.group(1).replace(" ", "")
+                    # Split the string by commas and convert to a list of integers
+                    cpu_list = cpu_list_str.split(',')
+                    return cpu_list
+    print("Warning: Could not parse out the cpus used in the parameter file")
+    return None
+
+
+
+def local_parameters(func):
+    """
+    Wraps a function, to replace PARAMETERS with the wanted one temporarily, in the end restoring the original state.
+    So you can make any changes you want to the parameters file.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Generate a random extension
+        random_ext = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        used_dir, used_filename = os.path.split(PARAMETERS_PATH)
+        used_base, used_ext = os.path.splitext(used_filename)
+        backup_filename = f"{used_base}.{random_ext}"
+        backup_path = os.path.join(used_dir, backup_filename)
+
+        try:
+            # Copy the used parameters file to a backup with a random extension
+            shutil.copy2(PARAMETERS_PATH, backup_path)
+
+            # Replace the used parameters file with the wanted parameters file
+            shutil.copy2(WANTED_PARAMETERS_PATH, PARAMETERS_PATH)
+
+            # Execute the wrapped function
+            result = func(*args, **kwargs)
+            return result
+
+        finally:
+            # Restore the original used parameters file
+            if os.path.exists(backup_path):
+                shutil.move(backup_path, PARAMETERS_PATH)
+                pass
+            else:
+                print(f"ERROR: Backup file '{backup_path}' not found. Original PARAMETERS file not restored!")
+
+    return wrapper
+
+
+@local_parameters
 def process_benchit_output(config: Config):
     # Run the compile command
-    compile_cmd = [COMPILE_CMD, KERNEL_PATH,
-                   f"--parameter-file={BASE_PARAMETERS_PATH}"]
+    compile_cmd = [COMPILE_CMD, KERNEL_PATH]
     compile_process = subprocess.run(
         compile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if compile_process.returncode != 0:
@@ -62,12 +137,12 @@ def process_benchit_output(config: Config):
         exit(0)
 
     # Run the run command
-    run_cmd = [RUN_CMD, BINARY_PATH,
-               f"--parameter-file={BASE_PARAMETERS_PATH}"]
+    run_cmd = [RUN_CMD, BINARY_PATH]
     run_process = subprocess.run(
         run_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if run_process.returncode != 0:
         print("Execution failed")
+        print(run_process.stdout)
         print(run_process.stderr)
         exit(0)
 
@@ -77,6 +152,8 @@ def process_benchit_output(config: Config):
         r'BenchIT: Wrote output to "(.*?)" in directory\s+"(.*?)"', output)
     if not match:
         print("Failed to parse output file path.")
+        print(run_process.stdout)
+        print(run_process.stderr)
         exit(0)
 
     filename, directory = match.groups()
@@ -105,13 +182,21 @@ def process_benchit_output(config: Config):
                      sep='\t', header=None)  # Use StringIO here
 
     # Select and rename the columns
-    custom_column_names = ['local', 'CCX', 'NUMA0',
-                           'NUMA1', 'NUMA2', 'NUMA3', 'Inter-socket']
+    if config.dynamic_threads:
+        custom_column_names = parse_cpu_list()
+    else:
+        custom_column_names = ['local', 'hyperthread', 'CCX', 'NUMA0',
+                               'NUMA1', 'NUMA2', 'NUMA3', 'Inter-socket']
     df_selected = df.iloc[:, 1:len(custom_column_names)+1]
     df_selected.columns = custom_column_names
 
     # Rename the rows
     df_selected.index = ['L1', 'L2', 'L3', 'Main Memory']
+
+    if config.save_name:
+        os.makedirs(config.save_name, exist_ok=True)
+        data_path = os.path.join(config.save_name, 'data.csv')
+        df.to_csv(data_path)
 
     print(df_selected)
     return df_selected
@@ -151,10 +236,13 @@ def plot_latency_data(df, config: Config):
     # Tight layout to adjust for legend
     plt.tight_layout()
 
-    # Save the figure to a file (e.g., PDF for publication quality)
-    # plt.savefig(f'latency_plot_{config.cache_state}.pdf', format='pdf')
+    # Save the figure to a file 
+    if config.save_name:
+        os.makedirs(config.save_name, exist_ok=True)
+        figure_path = os.path.join(config.save_name, 'figure.pdf')
+        plt.savefig(figure_path, format='pdf')
 
-    # Show the plot (optional)
+    # Show the plot
     plt.show()
 
 

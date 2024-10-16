@@ -26,7 +26,7 @@ BENCHIT_RUN_LINEAR="1"
 
 # list of memorysizes to use for the measurement
 # format: "x,y,z"or "x-y" or "x-y/step" or any combination
-# BENCHIT_KERNEL_PROBLEMLIST="8192-131071/4096,131072-4194303/32768,4194304-14999999/524288,15000000-39999999/2000000,40000000-200000000/8000000"
+BENCHIT_KERNEL_PROBLEMLIST="30000,500000,5000000,200000000"
 
 # alternative: automatically generate logarithmic scale
 # MIN should be about half the L1 size
@@ -39,11 +39,12 @@ BENCHIT_KERNEL_STEPS=70
 # format: "x,y,z"or "x-y" or "x-y/step" or any combination
 # useful setting: CPU0, another CPU sharing the socket (or die in case of MCMs) with CPU0, one CPU in every other socket (or die)
 #                 using more CPUs usually results in redundant curves
-BENCHIT_KERNEL_CPU_LIST="0,1,7-15/4,23-127/8"
+# Setting: Locally, same CCX, quadrant 0-3 on local socket, other socket
+BENCHIT_KERNEL_CPU_LIST="0,256,1,16,32,64,96,128"
 
 # defines how often each memorysize is measured internally (default 6)
 # lower values recommended for USE_MODE S/F as multiple iterations train the prefetchers (increase BENCHIT_RUN_ACCURACY instead)
-BENCHIT_KERNEL_RUNS=6
+BENCHIT_KERNEL_RUNS=10
 # clear caches between runs (0|1 default 1)
 BENCHIT_KERNEL_CLFLUSH_BETWEEN_RUNS=1
 
@@ -56,7 +57,7 @@ BENCHIT_KERNEL_ACCESSES=1200
 # there will be only one access per block per measurement, so this avoids multiple accesses to
 # single cachelines during the measurement, if choosen higher than cacheline width
 # (should be 2x or 4x cacheline width to reduce impact of line prefetches)
-BENCHIT_KERNEL_ALIGNMENT=512
+BENCHIT_KERNEL_ALIGNMENT=512 # Kare: Maybe halve this
 
 # TLB mode (default 0)
 # which TLB Level is used at max
@@ -81,7 +82,7 @@ BENCHIT_KERNEL_FLUSH_PAGE_TABLES=1
 BENCHIT_KERNEL_ALLOC="L"
 # Memory affinity, ignored if BENCHIT_KERNEL_ALLOC is not set to "B"
 # needs to be at least as long as BENCHIT_KERNEL_CPU_LIST
-BENCHIT_KERNEL_MEM_BIND="0,1,7-15/4,23-127/8"
+BENCHIT_KERNEL_MEM_BIND="0,256,1,16,32,64,96,128"
 
 
 # use hugepages (0/1) (default 0, 1 recommended if hugetlbfs is available)
@@ -110,6 +111,7 @@ BENCHIT_KERNEL_USE_MODE="E"
 BENCHIT_KERNEL_SHARED_CPU_LIST="1"
 
 # define which cache levels to flush (default no flushes)
+# Kare: TODO: Try experimenting with this
 BENCHIT_KERNEL_FLUSH_L1=0
 BENCHIT_KERNEL_FLUSH_L2=0
 BENCHIT_KERNEL_FLUSH_L3=0
