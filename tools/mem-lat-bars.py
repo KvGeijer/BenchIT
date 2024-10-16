@@ -42,7 +42,7 @@ def parse_arguments() -> Config:
     parser.add_argument(
         '--cache-state',
         type=str,
-        choices=['M', 'E', 'I', 'R'],
+        choices=['M', 'E', 'I', 'R', 'F', 'O', 'U'],
         default='E',
         help="Cache state: 'M' (Modified), 'E' (Exclusive), 'I' (Invalid), 'R' (Read-only)"
     )
@@ -138,6 +138,15 @@ def local_parameters(func):
 
 @local_parameters
 def process_benchit_output(config: Config):
+    # Change the cache state
+    with open(PARAMETERS_PATH, 'r') as file:
+        content = file.read()
+
+    with open(PARAMETERS_PATH, 'w') as file:
+        new_content = re.sub(r'BENCINT_KERNAL_USE_MODE="."',
+                             f'BENCINT_KERNAL_USE_MODE="{config.cache_state}"', content)
+        file.write(new_content)
+
     # Run the compile command
     compile_cmd = [COMPILE_CMD, KERNEL_PATH]
     compile_process = subprocess.run(
