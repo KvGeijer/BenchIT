@@ -196,7 +196,7 @@ def process_benchit_output(config: Config):
     if config.save_name:
         os.makedirs(config.save_name, exist_ok=True)
         data_path = os.path.join(config.save_name, 'data.csv')
-        df.to_csv(data_path)
+        df_selected.to_csv(data_path)
 
     print(df_selected)
     return df_selected
