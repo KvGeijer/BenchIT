@@ -13,7 +13,6 @@ from functools import wraps
 from pathlib import Path
 import random
 import string
-import shutil
 
 
 KERNEL_PATH = "./kernel/arch_x86-64/memory_latency/C/pthread/0/read"
@@ -26,7 +25,8 @@ RUN_CMD = "./RUN.SH"
 
 @dataclass
 class Config:
-    save_name: str | None
+    save_name: Path | None
+    old_name: Path | None
     cache_state: str
     dynamic_threads: bool
 
@@ -46,8 +46,10 @@ def parse_arguments() -> Config:
         default='E',
         help="Cache state: 'M' (Modified), 'E' (Exclusive), 'I' (Invalid), 'R' (Read-only)"
     )
-    parser.add_argument('--dynamic-thread-names', action='store_true', 
+    parser.add_argument('--dynamic-thread-names', action='store_true',
                         help="Uses the core ids instead of hard-coded names based on distance.")
+    parser.add_argument('--old-name', type=str,
+                        help="Re-uses old data from a specific results directory, from an earlier run of this test.")
 
     args = parser.parse_args()
     if args.save_name:
@@ -58,11 +60,20 @@ def parse_arguments() -> Config:
     else:
         save_name = None
 
+    if args.old_name:
+        old_name = Path(args.old_name)
+        if not old_name.exists():
+            print("Old name does not point to a directory!")
+            exit(0)
+    else:
+        old_name = None
+
     # Convert to Config dataclass
     config = Config(
         cache_state=args.cache_state,
         save_name=save_name,
         dynamic_threads=args.dynamic_thread_names,
+        old_name=old_name,
     )
     return config
 
@@ -87,7 +98,6 @@ def parse_cpu_list():
     return None
 
 
-
 def local_parameters(func):
     """
     Wraps a function, to replace PARAMETERS with the wanted one temporarily, in the end restoring the original state.
@@ -96,7 +106,8 @@ def local_parameters(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Generate a random extension
-        random_ext = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        random_ext = ''.join(random.choices(
+            string.ascii_lowercase + string.digits, k=8))
         used_dir, used_filename = os.path.split(PARAMETERS_PATH)
         used_base, used_ext = os.path.splitext(used_filename)
         backup_filename = f"{used_base}.{random_ext}"
@@ -119,7 +130,8 @@ def local_parameters(func):
                 shutil.move(backup_path, PARAMETERS_PATH)
                 pass
             else:
-                print(f"ERROR: Backup file '{backup_path}' not found. Original PARAMETERS file not restored!")
+                print(
+                    f"ERROR: Backup file '{backup_path}' not found. Original PARAMETERS file not restored!")
 
     return wrapper
 
@@ -236,7 +248,7 @@ def plot_latency_data(df, config: Config):
     # Tight layout to adjust for legend
     plt.tight_layout()
 
-    # Save the figure to a file 
+    # Save the figure to a file
     if config.save_name:
         os.makedirs(config.save_name, exist_ok=True)
         figure_path = os.path.join(config.save_name, 'figure.pdf')
@@ -250,15 +262,22 @@ def main():
     # Parse command-line arguments
     config = parse_arguments()
 
-    try:
-        # Disable prefetching for the experiments
-        disable_prefetch()
+    if not config.old_name:
+        try:
+            # Disable prefetching for the experiments
+            disable_prefetch()
 
-        # Collect or generate latency data based on configurations
-        df = process_benchit_output(config)
-    finally:
-        # Don't forget to re-enable the prefetching
-        enable_prefetch()
+            # Collect or generate latency data based on configurations
+            df = process_benchit_output(config)
+        finally:
+            # Don't forget to re-enable the prefetching
+            enable_prefetch()
+    else:
+        data_path = config.old_name / 'data.csv'
+        if not data_path.is_file():
+            print("Old data does not exist in folder")
+            exit(0)
+        df = pd.read_csv(data_path, index_col=0)
 
     # Plot the latency data
     plot_latency_data(df, config)
