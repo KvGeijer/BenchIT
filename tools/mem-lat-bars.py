@@ -42,9 +42,9 @@ def parse_arguments() -> Config:
     parser.add_argument(
         '--cache-state',
         type=str,
-        choices=['M', 'E', 'I', 'S', 'F', 'O', 'U'],
+        choices=['M', 'E', 'I', 'S', 'O', 'U'],
         default='E',
-        help="Cache state: 'M' (Modified), 'E' (Exclusive), 'I' (Invalid), 'S' (Shared), 'F' (Forwarded), 'O' (Owned), 'U' (Undefined)"
+        help="Cache state: 'M' (Modified), 'E' (Exclusive), 'I' (Invalid), 'S' (Shared), 'O' (Owned), 'U' (Undefined)"
     )
     parser.add_argument('--dynamic-thread-names', action='store_true',
                         help="Uses the core ids instead of hard-coded names based on distance.")
