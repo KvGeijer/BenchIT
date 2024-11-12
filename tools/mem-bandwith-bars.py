@@ -15,10 +15,10 @@ import random
 import string
 
 
-KERNEL_PATH = "./kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/multiple-r1w1"
-BINARY_PATH = "./bin/arch_x86-64.memory_bandwidth.C.pthread.SIMD.multiple-r1w1.0"
-WANTED_PARAMETERS_PATH = "kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/multiple-r1w1/PARAMETERS_ATHENA_1LEVELS"
-PARAMETERS_PATH = "kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/multiple-r1w1/PARAMETERS"
+KERNEL_PATH = "./kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/single-reader"
+BINARY_PATH = "./bin/arch_x86-64.memory_bandwidth.C.pthread.SIMD.single-reader.0"
+WANTED_PARAMETERS_PATH = "kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/single-reader/PARAMETERS_ATHENA_1LEVELS"
+PARAMETERS_PATH = "kernel/arch_x86-64/memory_bandwidth/C/pthread/SIMD/single-reader/PARAMETERS"
 COMPILE_CMD = "./COMPILE.SH"
 RUN_CMD = "./RUN.SH"
 

@@ -6,7 +6,7 @@
 # $Id$
 # For license details see COPYING in the package base directory
 ##################################################################################################################
-# Kernel: measures aggregate read/write bandwidth of multiple parallel threads.
+# Kernel: measures read bandwidth of data located in different cache levels or memory of certain CPUs.
 ##################################################################################################################
 
 # additional information (e.g Turbo Boost enabled/disabled)
@@ -29,18 +29,20 @@ BENCHIT_RUN_LINEAR="1"
 BENCHIT_KERNEL_PROBLEMLIST="30000,500000,5000000,200000000"
 
 # alternative: automatically generate logarithmic scale
-# MIN should be at least half the L1 size times the number of CPUs used
-# MAX should be at least twice the last level cache size of all used dies
+# MIN should be about half the L1 size
+# MAX should be at least twice the last level cache size
 BENCHIT_KERNEL_MIN=16000
-BENCHIT_KERNEL_MAX=400000000
+BENCHIT_KERNEL_MAX=200000000
 BENCHIT_KERNEL_STEPS=70
 
 # defines which cpus to run on, if not set sched_getaffinity is used to determine allowed cpus
 # format: "x,y,z"or "x-y" or "x-y/step" or any combination
-# useful settings: all CPUs, all CPUs in one socket, n CPUs on all sockets
+# useful setting: CPU0, another CPU sharing the socket (or die in case of MCMs) with CPU0, one CPU in every other socket (or die)
+#                 using more CPUs usually results in redundant curves
 BENCHIT_KERNEL_CPU_LIST="0,256,1,16,32,64,96,128"
 
-# defines how often each memorysize is measured internally (default 8)
+# defines how often each memorysize is measured internally (default 6)
+# lower values recommended for USE_MODE S/F as multiple iterations train the prefetchers (increase BENCHIT_RUN_ACCURACY instead)
 BENCHIT_KERNEL_RUNS=10
 
 # Allocation method: (G/L/B) (default L)
@@ -54,11 +56,6 @@ BENCHIT_KERNEL_ALLOC="L"
 # needs to be at least as long as BENCHIT_KERNEL_CPU_LIST
 BENCHIT_KERNEL_MEM_BIND="0,256,1,16,32,64,96,128"
 
-# Multiple Threads using the same memory controller can cause conflickts in the memory
-# (e.g. all Threads using the same memory channel or access the same chip of a single DIMM)
-# This parameter assigns each Thread an individual offset (Thread-ID*THREAD_OFFSET)
-# e.g not all Threads start at a 2M boundary when using hugepages
-BENCHIT_KERNEL_THREAD_OFFSET="226688"
 
 # use hugepages (0/1) (default 0, 1 recommended if hugetlbfs is available)
 BENCHIT_KERNEL_HUGEPAGES=0
@@ -68,12 +65,22 @@ BENCHIT_KERNEL_HUGEPAGE_DIR="/mnt/huge"
 # number of accesses when using memory (default 4)
 BENCHIT_KERNEL_USE_ACCESSES=4
 
-# usage mode: (M/E/I) (default M)
+# usage mode: (M/O/E/S/I/F/U) (default E)
 # the target coherency state when using memory
 # M: Modified,  leaves accessed cachelines in modified state after usage, shows penalty of writebacks
 # E: Exclusive, leaves accessed cachelines in exclusive state after usage, avoids writebacks
 # I: Invalid,   invalidates caches after usage
-BENCHIT_KERNEL_USE_MODE="M"
+# S: Shared,             shares unmodified cachelines with another CPU, other CPU reads last
+# F: Forward,            shares unmodified cachelines with another CPU, other CPU reads first
+# O: Owned,              shares modified cachelines with another CPU
+# U: Modified unwritten, moves modified cachelines to another CPU
+BENCHIT_KERNEL_USE_MODE="E"
+
+
+
+# S/O/F/U require CPUs to share cachelines with. The selected CPUs must not be part of the BENCHIT_KERNEL_CPU_LIST
+# should be as far away (max. number of HT/QPI hops) from the first CPU in BENCHIT_KERNEL_CPU_LIST as possible
+BENCHIT_KERNEL_SHARED_CPU_LIST="80"
 
 # influences which part of the buffer is accessed first during the measurement
 # LIFO: measurement starts with the last byte that has been previosly used
@@ -86,32 +93,39 @@ BENCHIT_KERNEL_FLUSH_L2=0
 BENCHIT_KERNEL_FLUSH_L3=0
 BENCHIT_KERNEL_FLUSH_L4=0
 
+# remove data from helper threads (default 0)
+# - useful to remove F/O copies in other sockets
+# - destroys content of shared caches !!!
+BENCHIT_KERNEL_FLUSH_SHARED_CPU=0
+
 # number of accesses per cacheline to flush cache (default 2)
 BENCHIT_KERNEL_FLUSH_ACCESSES=2
 
-# allocation method for flush buffer (G: global / T: per thread) (default T)
-BENCHIT_KERNEL_FLUSH_BUFFER="T"
+# allocation method for flush buffer (G: global / T: per thread) (default G)
+BENCHIT_KERNEL_FLUSH_BUFFER="G"
 
 # additional amount of memory for cache flushes in % (0-1000, default 20)
 # (1 + x/100)*N Bytes will be touched to flush a cache of size N
 # size of flush buffer doubled for LLC cache
 BENCHIT_KERNEL_FLUSH_EXTRA=20
 
+# additional flush on measuring CPU prior to measurement (0: disabled / 1: enabled) (default 1)
+BENCHIT_KERNEL_ALWAYS_FLUSH_CPU0=1
 
-# flush mode: (M/E/I/R) (default M)
+# flush mode: (M/E/I/R) (default E)
 # the target coherency state when flushing memory
 # M: Modified, fills cache with modified lines, results in writeback penalties before using other memory
 # E: Exclusive, fills cache with exclusive lines that do not have to be written back, does not cause writeback penalties
 # I: Invalid, fills caches with invalid lines, CPUs might use free space for prefetching data
 # R: read only, fills cache with valid data, does not perform any write operations
 #    not recomended when a global flush buffer is used
-BENCHIT_KERNEL_FLUSH_MODE="M"
+BENCHIT_KERNEL_FLUSH_MODE="E"
 
-# the assembler instruction that will be used for the measurement (mov|movnti|movdqa|movdqu|movntdq|vmovdqa|vmovdqu|vmovntdq)
+# the assembler instruction that will be used for the measurement (mov|movdqa|movdqu|vmovdqa|vmovdqu)
 BENCHIT_KERNEL_INSTRUCTION="movdqa"
 
 # force unaligned accesses (default 0: all accesses aligned to data type size)
-# ignored when using movdqa or movntdq
+# ignored when using movdqa
 # has to be smaller then cache line length
 BENCHIT_KERNEL_OFFSET="0"
 
@@ -131,10 +145,6 @@ BENCHIT_KERNEL_PAPI_COUNTERS="PAPI_L2_TCM"
 
 # max time a benchmark can run
 BENCHIT_KERNEL_TIMEOUT=3600
-
-# TSC based synchronization (auto|enabled|disabled) (default: auto)
-# if available TSC based synchronization optimizes barrier synchronizations for concurrently leaving threads
-BENCHIT_KERNEL_TSC_SYNC="auto"
 
 # Compensation of loop overhead (enabled|disabled) (default: enabled)
 # if enabled the loop overhead is estimated and subtracted from the measured runtime
